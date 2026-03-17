@@ -2,7 +2,7 @@
 
 **The PHP framework built for the age of vibe-coding.**
 
-[![Built with OneShot](https://img.shields.io/badge/built%20with-OneShot-6c47ff?style=flat-square)](https://github.com/oneshot-framework/oneshot)
+[![Built with OneShot](https://img.shields.io/badge/built%20with-OneShot-6c47ff?style=flat-square)](https://github.com/oneshotsaas/oneshot)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
 ---
@@ -55,7 +55,7 @@ The AI doesn't guess your conventions. It reads `CLAUDE.md`, `.ai/rules/`, and e
 ## Quick Start
 
 ```bash
-git clone https://github.com/oneshot-framework/oneshot my-app
+git clone https://github.com/oneshotsaas/oneshot my-app
 cd my-app
 composer install
 cp env .env   # set database credentials
@@ -141,7 +141,7 @@ Open your project in Claude, Cursor, or any AI IDE. Ask anything. Get working co
 Are you building with OneShot? Add the badge to your README:
 
 ```markdown
-[![Built with OneShot](https://img.shields.io/badge/built%20with-OneShot-6c47ff?style=flat-square)](https://github.com/oneshot-framework/oneshot)
+[![Built with OneShot](https://img.shields.io/badge/built%20with-OneShot-6c47ff?style=flat-square)](https://github.com/oneshotsaas/oneshot)
 ```
 
 ---
