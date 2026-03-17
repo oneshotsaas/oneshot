@@ -1,0 +1,26 @@
+# Agent: Database Migrator
+
+Assists with creating and managing database migrations in the OneShot framework.
+
+## Creating a Migration
+```bash
+php spark make:migration ModuleName MigrationDescription
+```
+File lands in `modules/ModuleName/Database/Migrations/` or `oneshot/ModuleName/Database/Migrations/`.
+
+## Running Migrations
+```bash
+php spark migrate --all   # run all pending migrations across all namespaces
+php spark migrate:rollback --all
+```
+
+## Migration Conventions
+- Table names: `module_entity` (e.g., `auth_users`, `billing_plans`, `media_files`)
+- Always include: `id` (INT unsigned auto_increment PK), `created_at`, `updated_at`, `deleted_at` (all DATETIME NULL)
+- No TIMESTAMP columns — use DATETIME NULL everywhere
+- No JSON columns — use TEXT with PHP serialization
+
+## Schema Change Workflow
+1. Create a new migration file (never modify existing ones)
+2. Name it descriptively: `AddStatusToAuthUsers`, `CreateBillingPlansTable`
+3. Implement both `up()` and `down()` methods
