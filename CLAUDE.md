@@ -79,6 +79,23 @@ Base → Front  (layout: Core::layouts/front)
 
 ---
 
+## Git Workflow
+
+Branches: `main` (stable) and `dev` (working).
+
+**Rules:**
+- All work goes to `dev` — commit and push to `dev` only
+- Never push directly to `main`
+- `main` ← `dev` only when the release is confirmed (via PR on GitHub)
+
+```bash
+git add <files>
+git commit -m "description"
+git push origin dev
+```
+
+---
+
 ## Key Files
 
 | File | Purpose |
