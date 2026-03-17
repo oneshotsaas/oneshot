@@ -148,4 +148,4 @@ Are you building with OneShot? Add the badge to your README:
 
 ## License
 
-MIT © 2026-present OneShot Framework
+MIT — see [LICENSE](LICENSE)
