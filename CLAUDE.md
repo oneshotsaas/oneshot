@@ -87,6 +87,7 @@ Branches: `main` (stable) and `dev` (working).
 - All work goes to `dev` — commit and push to `dev` only
 - Never push directly to `main`
 - `main` ← `dev` only when the release is confirmed (via PR on GitHub)
+- Never add `Co-Authored-By` lines to commit messages
 
 ```bash
 git add <files>
