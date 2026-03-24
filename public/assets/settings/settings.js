@@ -3,6 +3,10 @@
  * Handles: theme pickers, section tabs, mode tabs
  */
 
+// Enable live theme preview on this page
+document.documentElement.dataset.liveTheme = '1';
+document.body.dataset.liveTheme = '1';
+
 // ── Theme Pickers ─────────────────────────────────────────────────────────────
 document.querySelectorAll('.theme-picker[data-picker-id]').forEach(function (picker) {
     const pickerId   = picker.dataset.pickerId;

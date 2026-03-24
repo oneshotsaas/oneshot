@@ -1,29 +1,19 @@
 <div class="hero min-h-[calc(100vh-4rem)]">
     <div class="hero-content flex-col w-full max-w-md">
         <div class="text-center">
-            <h1 class="text-3xl font-bold"><?= __('auth.create_account', 'Create account') ?></h1>
-            <p class="text-base-content/60 mt-1"><?= __('auth.register_subtitle', 'Start building your SaaS today') ?></p>
+            <h1 class="text-3xl font-bold"><?= __('auth.reset_title', 'Set new password') ?></h1>
+            <p class="text-base-content/60 mt-1"><?= __('auth.reset_subtitle', 'Choose a strong password') ?></p>
         </div>
         <div class="card bg-base-200 shadow-xl w-full">
             <div class="card-body gap-4">
-                <form method="post" action="<?= route_to('auth.register') ?>" class="flex flex-col gap-4"
-                      data-policy="<?= esc(json_encode($passwordPolicy ?? [])) ?>">
+                <form method="post" action="<?= current_url() ?>" class="flex flex-col gap-4">
                     <?= csrf_field() ?>
                     <fieldset class="fieldset">
-                        <legend class="fieldset-legend"><?= __('auth.name', 'Name') ?></legend>
-                        <input type="text" name="name" class="input input-bordered w-full"
-                               placeholder="<?= __('auth.name_placeholder', 'Your name') ?>" required autocomplete="name">
-                    </fieldset>
-                    <fieldset class="fieldset">
-                        <legend class="fieldset-legend"><?= __('auth.email', 'Email') ?></legend>
-                        <input type="email" name="email" class="input input-bordered w-full"
-                               placeholder="<?= __('auth.email_placeholder', 'you@example.com') ?>" required autocomplete="email">
-                    </fieldset>
-                    <fieldset class="fieldset">
-                        <legend class="fieldset-legend"><?= __('auth.password', 'Password') ?></legend>
+                        <legend class="fieldset-legend"><?= __('auth.new_password', 'New Password') ?></legend>
                         <div class="pw-wrap relative">
                             <input type="password" name="password" class="input input-bordered w-full pr-24"
-                                   placeholder="<?= __('auth.password_placeholder', '••••••••') ?>" required autocomplete="new-password">
+                                   placeholder="<?= __('auth.password_placeholder', '••••••••') ?>"
+                                   required autocomplete="new-password" minlength="<?= (int)($passwordPolicy['min_length'] ?? 8) ?>">
                             <div class="absolute right-1 top-1/2 -translate-y-1/2 flex gap-0.5">
                                 <div class="tooltip tooltip-top" data-tip="<?= __('auth.pw_show', 'Show') ?>">
                                     <button type="button" class="js-pw-toggle btn btn-ghost btn-xs px-1.5 opacity-50 hover:opacity-100"
@@ -57,15 +47,14 @@
                         </p>
                         <?php endif; ?>
                     </fieldset>
-                    <button type="submit" class="btn btn-primary w-full mt-2"><?= __('auth.create_account', 'Create Account') ?></button>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend"><?= __('auth.confirm_password', 'Confirm Password') ?></legend>
+                        <input type="password" name="confirm_password" class="input input-bordered w-full"
+                               placeholder="<?= __('auth.password_placeholder', '••••••••') ?>"
+                               required autocomplete="new-password">
+                    </fieldset>
+                    <button type="submit" class="btn btn-primary w-full mt-2"><?= __('auth.reset_submit', 'Reset Password') ?></button>
                 </form>
-
-                <?= render('Auth::front/oauth_buttons', ['oauthProviders' => $oauthProviders ?? []]) ?>
-
-                <p class="text-center text-sm text-base-content/60">
-                    <?= __('auth.have_account', 'Already have an account?') ?>
-                    <a href="<?= route_to('auth.login') ?>" class="link link-primary"><?= __('auth.login', 'Sign In') ?></a>
-                </p>
             </div>
         </div>
     </div>

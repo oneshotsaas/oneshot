@@ -26,8 +26,8 @@ $_appName     = option('general.app_name', config('App')->name ?? 'OneShot');
     <?php endif; ?>
     <?php $_faviconUrl = option('branding.favicon_url', ''); ?>
     <link rel="icon" type="image/svg+xml" href="<?= !empty($_faviconUrl) ? esc($_faviconUrl) : '/favicon.svg' ?>">
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="<?= base_url('assets/css/daisyui.css') ?>" rel="stylesheet" type="text/css" />
+    <script src="<?= base_url('assets/js/tailwind-browser.js') ?>"></script>
     <?php
     // Sanitize: only a-z, 0-9, hyphens — no path traversal possible
     $_themeSafe = preg_replace('/[^a-z0-9\-]/', '', strtolower($_theme));

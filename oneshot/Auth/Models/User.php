@@ -7,7 +7,7 @@ use OneShot\Core\Models\Base;
 class User extends Base
 {
     protected $table         = 'auth_users';
-    protected $allowedFields = ['email', 'password', 'role', 'name', 'lang', 'timezone', 'status'];
+    protected $allowedFields = ['email', 'email_verified_at', 'password', 'role', 'name', 'lang', 'timezone', 'status'];
 
     public function findByEmail(string $email): object|null
     {

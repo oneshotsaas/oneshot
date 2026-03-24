@@ -12,7 +12,7 @@ Core module for storing and retrieving application settings (global) and user pr
 |---------|--------------|-------------|
 | key     | VARCHAR(128) | `group.param` e.g. `appearance.admin_dark_theme` |
 | value   | TEXT         | AES-256-CTR encrypted at rest |
-| type    | VARCHAR(20)  | `text`, `password`, `textarea`, `select`, `multiselect`, `color`, `url`, `code` |
+| type    | VARCHAR(20)  | `text`, `password`, `textarea`, `select`, `multiselect`, `color`, `url`, `code`, `boolean`, `readonly` |
 | options | TEXT (JSON)  | `[{"value":"dark","label":"Dark"}, ...]` for select types |
 | user_id | INT NULL     | NULL = global; user ID = per-user override |
 | label   | VARCHAR(128) | Human-readable label for the settings UI |
@@ -66,6 +66,21 @@ Settings registered by any module can have translatable labels and hints. The ad
 'overdraft_mode'      => 'Overdraft Mode',
 'overdraft_mode_hint' => 'deny — block; once — allow going negative once; limit — allow down to floor.',
 ```
+
+## Field Types
+
+| Type        | Renders as | Notes |
+|-------------|------------|-------|
+| `text`      | text input | |
+| `password`  | password input | show/hide + copy buttons |
+| `textarea`  | textarea | |
+| `code`      | monospace textarea | spellcheck off |
+| `select`    | `<select>` | requires `options` JSON |
+| `multiselect` | `<select multiple>` | requires `options` JSON, value stored as JSON array |
+| `url`       | url input | `https://` placeholder |
+| `color`     | color picker | |
+| `boolean`   | toggle | stores `"0"` / `"1"` |
+| `readonly`  | copyable text input | **never saved on form submit** — value must be set in seeder; re-seed when base URL or secrets change |
 
 ## Default Groups
 

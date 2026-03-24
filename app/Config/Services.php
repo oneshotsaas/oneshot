@@ -19,14 +19,21 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
-    /*
-     * public static function example($getShared = true)
-     * {
-     *     if ($getShared) {
-     *         return static::getSharedInstance('example');
-     *     }
-     *
-     *     return new \CodeIgniter\Example();
-     * }
-     */
+    public static function mailAuth(bool $getShared = true): \OneShot\Auth\Services\MailService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('mailAuth');
+        }
+
+        return new \OneShot\Auth\Services\MailService();
+    }
+
+    public static function oauth(bool $getShared = true): \OneShot\Auth\Services\OAuthService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('oauth');
+        }
+
+        return new \OneShot\Auth\Services\OAuthService();
+    }
 }

@@ -48,6 +48,10 @@ class Settings extends Admin
         $post   = $this->request->getPost();
 
         foreach ($fields as $field) {
+            if ($field->type === 'readonly') {
+                continue;
+            }
+
             $inputName = str_replace('.', '__', $field->key);
             $value     = $post[$inputName] ?? '';
 

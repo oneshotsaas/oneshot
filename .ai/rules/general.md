@@ -6,6 +6,7 @@
 - Namespaces ensure uniqueness, so class names should not repeat the namespace
 
 ## Code Style
+- No emojis anywhere — not in views, emails, comments, or strings
 - DRY, SOLID, KISS — always
 - No code in loops that hits the database; use `whereIn()` and post-process in PHP
 - No hardcoded values; use `.env` and config files
@@ -23,6 +24,14 @@
 - `OneShot\Core` is statically registered in `app/Config/Autoload.php`, so `php spark migrate -n "OneShot\\Core"` always finds them
 - Run: `php spark migrate -n "OneShot\\Core"`
 - Seed: `php spark db:seed DatabaseSeeder`
+
+## Commands (spark)
+
+- **All spark commands live in `oneshot/Core/Commands/`** with namespace `OneShot\Core\Commands`
+- `OneShot\Core` is statically registered in `app/Config/Autoload.php` — commands there are auto-discovered by CI4
+- Commands in dynamically-registered namespaces (`OneShot\Auth`, `OneShot\Settings`, etc.) are **not** discovered — never put commands there
+- If a command needs the oneshot helpers, call `helper('oneshot')` — `oneshot_helper.php` aliases the main file
+- Group: always `'OneShot'` to keep commands grouped in `php spark list`
 
 ## Security
 - Never expose internal database IDs — use `signId()` / `signedId()`
@@ -114,10 +123,10 @@ $this->share('page_actions_view', 'Billing::admin/items/_actions');
 - Module JS goes in `public/assets/{module}/{module}.js`, CSS in `public/assets/{module}/{module}.css`
 - No inline `<script>` or `<style>` blocks in views — ever
 - Dynamic init data passed via `data-*` attributes on the root element; the JS file reads them
-- Include the asset file at the bottom of the view: `<script src="<?= base_url('assets/settings/settings.js') ?>"></script>`
+- **Never add `<script>` tags inside view files** — all scripts are loaded centrally
+- `oneshot/Core/Views/layouts/_scripts.php` is included before `</body>` in every layout (admin, app, front) — **this is the only place to add `<script>` tags**; add module scripts there so they can later be bundled into a single file
 - **Shared/global JS** goes in `public/assets/core/core.js` — loaded automatically in all layouts via `Core::layouts/_scripts`
-- `oneshot/Core/Views/layouts/_scripts.php` is included before `</body>` in every layout (admin, app, front) — add global behaviour there, not in individual layouts
-- Activate shared behaviours via CSS classes (e.g. `js-toggle-password`), not via data attributes on layout elements
+- Activate shared behaviours via CSS classes (e.g. `js-pw-toggle`), not via data attributes on layout elements
 
 ## Views — i18n
 - **Never hardcode UI strings in views** — always wrap in `__('key', 'Fallback text')`

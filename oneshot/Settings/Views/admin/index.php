@@ -190,7 +190,11 @@ endif;
                     ?>
                     <?php
                     $fLabel = __($field->key, $field->label ?? $field->key);
-                    $fHint  = __($field->key . '_hint', '');
+                    $fHint  = str_replace(
+                        ['{base_url}', '{host}'],
+                        [rtrim(base_url(), '/'), parse_url(base_url(), PHP_URL_HOST)],
+                        __($field->key . '_hint', '')
+                    );
                     $isMultiline = in_array($field->type, ['textarea', 'code'], true);
                     ?>
                     <div class="grid grid-cols-[12rem_1fr] <?= $isMultiline ? 'items-start' : 'items-center' ?> gap-x-6">
@@ -246,6 +250,28 @@ endif;
                         <?php if ($fHint): ?><p class="text-xs opacity-40 mt-1"><?= esc($fHint) ?></p><?php endif; ?>
                         </div>
 
+                        <?php elseif ($field->type === 'readonly'): ?>
+                        <div>
+                        <div class="relative w-full">
+                            <input type="text" value="<?= esc($fValue) ?>" class="input input-bordered input-sm w-full font-mono pr-8 cursor-default" readonly>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-1">
+                                <button type="button" title="<?= esc(__('settings.copy', 'Copy')) ?>"
+                                        class="btn btn-ghost btn-xs btn-square opacity-40 hover:opacity-80 js-copy-value">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 icon-check hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <?php if ($fHint): ?><p class="text-xs opacity-40 mt-1"><?= esc($fHint) ?></p><?php endif; ?>
+                        </div>
+
+                        <?php elseif ($field->type === 'boolean'): ?>
+                        <div>
+                        <input type="hidden" name="<?= esc($fName) ?>" value="0">
+                        <input type="checkbox" name="<?= esc($fName) ?>" value="1" class="toggle toggle-sm" <?= $fValue === '1' ? 'checked' : '' ?>>
+                        <?php if ($fHint): ?><p class="text-xs opacity-40 mt-1"><?= esc($fHint) ?></p><?php endif; ?>
+                        </div>
+
                         <?php elseif ($field->type === 'password'): ?>
                         <div>
                         <div class="relative w-full">
@@ -286,5 +312,3 @@ endif;
 </div>
 </div>
 
-<script>document.documentElement.dataset.liveTheme='1';document.body.dataset.liveTheme='1';</script>
-<script src="<?= base_url('assets/settings/settings.js') ?>"></script>

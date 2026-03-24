@@ -9,6 +9,18 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    // ── Flash Dismiss ─────────────────────────────────────────────────────────
+    document.querySelectorAll('.js-flash-close').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var el = btn.closest('.alert');
+            if (!el) return;
+            el.style.transition = 'opacity 0.3s, transform 0.3s';
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-4px)';
+            setTimeout(function () { el.remove(); }, 300);
+        });
+    });
+
     // ── Password Toggle ───────────────────────────────────────────────────────
     // Usage: .js-toggle-password button inside a .relative wrapper with an input.
     document.querySelectorAll('.js-toggle-password').forEach(function (btn) {
