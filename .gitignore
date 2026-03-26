@@ -29,5 +29,8 @@ desktop.ini
 *.swp
 *.swo
 
+# Uploads
+public/uploads/
+
 # PHP
 *.log
