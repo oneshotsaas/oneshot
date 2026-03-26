@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a0533"/>
+      <stop offset="100%" stop-color="#0c0118"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#g)"/>
+  <!-- Code block -->
+  <rect x="40" y="40" width="720" height="320" rx="12" fill="#1e1e2e" opacity="0.9"/>
+  <rect x="40" y="40" width="720" height="36" rx="12" fill="#2a2a3e" opacity="1"/>
+  <!-- Window dots -->
+  <circle cx="68" cy="58" r="6" fill="#ff5f57"/>
+  <circle cx="90" cy="58" r="6" fill="#ffbd2e"/>
+  <circle cx="112" cy="58" r="6" fill="#28ca41"/>
+  <!-- Code lines -->
+  <g font-family="monospace" font-size="14">
+    <text x="68" y="110" fill="#cba6f7">const</text>
+    <text x="118" y="110" fill="#cdd6f4"> string </text>
+    <text x="192" y="110" fill="#89b4fa">VERSION</text>
+    <text x="268" y="110" fill="#cdd6f4"> = </text>
+    <text x="290" y="110" fill="#a6e3a1">'8.3.0'</text>
+    <text x="354" y="110" fill="#cdd6f4">;</text>
+
+    <text x="68" y="145" fill="#cba6f7">const</text>
+    <text x="118" y="145" fill="#cdd6f4"> int </text>
+    <text x="158" y="145" fill="#89b4fa">MAX_RETRIES</text>
+    <text x="278" y="145" fill="#cdd6f4"> = </text>
+    <text x="300" y="145" fill="#fab387">3</text>
+    <text x="312" y="145" fill="#cdd6f4">;</text>
+
+    <text x="68" y="195" fill="#89dceb">if </text>
+    <text x="90" y="195" fill="#cdd6f4">(</text>
+    <text x="98" y="195" fill="#89b4fa">json_validate</text>
+    <text x="224" y="195" fill="#cdd6f4">(</text>
+    <text x="232" y="195" fill="#89b4fa">$input</text>
+    <text x="274" y="195" fill="#cdd6f4">)) &#123;</text>
+
+    <text x="92"  y="225" fill="#cba6f7">  $data </text>
+    <text x="160" y="225" fill="#cdd6f4">= </text>
+    <text x="176" y="225" fill="#89b4fa">json_decode</text>
+    <text x="294" y="225" fill="#cdd6f4">(</text>
+    <text x="302" y="225" fill="#89b4fa">$input</text>
+    <text x="344" y="225" fill="#cdd6f4">);</text>
+
+    <text x="68"  y="255" fill="#cdd6f4">&#125;</text>
+
+    <text x="68" y="300" fill="#6c7086">// PHP 8.3 — typed constants, json_validate()</text>
+  </g>
+</svg>

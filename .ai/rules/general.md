@@ -128,6 +128,29 @@ $this->share('page_actions_view', 'Billing::admin/items/_actions');
 - **Shared/global JS** goes in `public/assets/core/core.js` — loaded automatically in all layouts via `Core::layouts/_scripts`
 - Activate shared behaviours via CSS classes (e.g. `js-pw-toggle`), not via data attributes on layout elements
 
+**Lazy / page-specific scripts** — for heavy scripts that should only load on one page (e.g. a rich text editor):
+
+1. Add an `$extra_scripts` slot to `_scripts.php`:
+   ```php
+   <?php if (!empty($extra_scripts ?? '')): ?><?= $extra_scripts ?><?php endif ?>
+   ```
+2. Create a `_editorjs_scripts.php` (or similar) partial listing the `<script>` tags.
+3. In the controller action that needs it, inject via `share()`:
+   ```php
+   $this->share('extra_scripts', render('Content::admin/items/_editorjs_scripts'));
+   ```
+   Use `render()` (the OneShot helper), **not** the native CI4 `view()` — `view()` does not understand the `Module::path` namespace syntax.
+   Scripts are only loaded on pages where the controller explicitly calls `share('extra_scripts', ...)` — not globally.
+
+## NEVER use `view()` — Always use `render()`
+
+**`view()` is FORBIDDEN everywhere in OneShot controllers and views.**
+
+- `view('Module::path/to/file')` — **WRONG**, throws `Invalid file` exception
+- `render('Module::path/to/file')` — **CORRECT**, resolves `Module::` namespace syntax
+
+This applies to all usages: `share()` calls, partial rendering, anywhere. There are zero exceptions.
+
 ## Views — i18n
 - **Never hardcode UI strings in views** — always wrap in `__('key', 'Fallback text')`
 - This applies to all visible text: labels, hints, placeholders, button text, etc.
@@ -141,6 +164,14 @@ $this->share('page_actions_view', 'Billing::admin/items/_actions');
   ```
   Language file: `'save_pct' => 'Save %d%%'` (use `%s`, `%d`, `%%` — standard printf format)
 
+## Module Helpers
+
+- Place module-specific helper functions in `{Module}/Helpers/{module}.php`
+- Guard every function with `if (!function_exists('fn_name'))` to allow app-level overrides
+- Load with `helper('{module}')` — CI4 resolves from the module's registered namespace automatically
+- Call `helper('{module}')` at the top of any controller action or view that uses the helpers (or in `initController`)
+- Name helpers with a module prefix to avoid collisions: `content_slugify()`, not `slugify()`
+
 ## i18n — Language Files
 Language files live inside the module that owns the strings, under `Language/en/{module}.php`.
 CI4's `service('locator')->search()` auto-discovers them from all registered namespace paths — no extra registration needed.
@@ -150,6 +181,8 @@ CI4's `service('locator')->search()` auto-discovers them from all registered nam
 | `auth.*` | `oneshot/Auth/Language/en/auth.php` |
 | `users.*` | `oneshot/Users/Language/en/users.php` |
 | `settings.*` | `oneshot/Settings/Language/en/settings.php` |
+| `billing.*` | `oneshot/Billing/Language/en/billing.php` |
+| `content.*` | `oneshot/Content/Language/en/content.php` |
 | `core.*` | `oneshot/Core/Language/en/core.php` |
 | `dashboard.*` | `modules/Dashboard/Language/en/dashboard.php` |
 | new module | `{module_path}/Language/en/{module_prefix}.php` |
@@ -266,6 +299,26 @@ Rules:
 ## Links and Routing
 - Always use `route_to('route.name')` for internal links
 - Clean URLs: `/items/(:segment)`, not `/items/view/(:segment)`
+
+**Catch-all routes** — if a module needs a catch-all `(:any)` route (e.g. a front-end URL resolver), two things are required:
+
+1. Add `$routes->setPrioritize(true)` to `app/Config/Routes.php` (once, project-wide). This makes CI4 evaluate `(:any)` last regardless of module registration order.
+2. Register the catch-all with a high priority value so it loses to all specific routes:
+   ```php
+   $routes->get('(:any)', '\OneShot\Content\Controllers\Front\Resolver::resolve/$1', ['priority' => 1000]);
+   ```
+   Priority `1000` = evaluated last. Specific routes default to priority `0`.
+
+**Cache invalidation pattern** — when a module maintains a long-lived in-memory or file cache (e.g. a URL map), follow this pattern:
+- Save with no TTL: `cache()->save($key, $data, 0)`
+- Provide a static flush method called in every write operation (store/update/destroy):
+  ```php
+  public static function flushContentCache(): void
+  {
+      cache()->delete(config('Content')->cacheKey);
+  }
+  ```
+- Never rely on TTL expiry for correctness — always flush explicitly on write.
 
 ## Views — Render Paths
 

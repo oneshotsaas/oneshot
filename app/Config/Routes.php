@@ -25,4 +25,6 @@ if (! env('app.secretKey')) {
     return; // skip all app & module routes
 }
 
+$routes->setPrioritize(true);
+
 $routes->get('/', 'Home::index');

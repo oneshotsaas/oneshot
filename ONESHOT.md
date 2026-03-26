@@ -33,9 +33,10 @@ oneshot/                      ← Framework library modules (third priority)
 │   └── Config/               ← Events.php (auto-discovered), Filters.php
 ├── Auth/                     ← Authentication module
 ├── Users/                    ← User management and profile
+├── Settings/                 ← App settings
+├── Billing/                  ← Subscriptions and payments
+├── Content/                  ← Pages, posts, categories, tags + URL resolver
 ├── Media/                    ← File uploads (planned)
-├── Settings/                 ← App settings (planned)
-├── Billing/                  ← Subscriptions and payments (planned)
 └── Notify/                   ← Notification dispatch (planned)
 
 providers/                    ← External service implementations
@@ -172,9 +173,10 @@ Modules read via `$p = config('Prefixes')`.
 | `Core`     | ✓ Done   | Framework kernel: controllers, models, helpers   |
 | `Auth`     | ✓ Done   | Login, registration, logout, session management  |
 | `Users`    | ✓ Done   | Admin user list, app profile editing             |
+| `Settings` | ✓ Done   | Key-value application settings                   |
+| `Billing`  | ✓ Done   | Subscription plans and payment processing        |
+| `Content`  | ✓ Done   | Pages, posts, nested categories, tags, URL resolver, Editor.js |
 | `Media`    | Planned  | File uploads with structured storage             |
-| `Settings` | Planned  | Key-value application settings                   |
-| `Billing`  | Planned  | Subscription plans and payment processing        |
 | `Notify`   | Planned  | Notification dispatch (email, Telegram, etc.)    |
 
 ---

@@ -9,8 +9,8 @@ $url = current_url();
     <li class="menu-title text-xs opacity-40 pt-2"><?= esc($item['divider']) ?></li>
 
     <?php else:
-        $href   = route_to($item['route']);
-        $match  = $item['match'] ?? $href;
+        $href   = isset($item['url']) ? $item['url'] : route_to($item['route']);
+        $match  = $item['match'] ?? (isset($item['url']) ? $item['url'] : $href);
         $active = str_contains($url, $match);
     ?>
     <li>
@@ -19,6 +19,9 @@ $url = current_url();
                 <path stroke-linecap="round" stroke-linejoin="round" d="<?= esc($item['icon']) ?>"/>
             </svg>
             <?= esc($item['label']) ?>
+            <?php if (!empty($item['badge'])): ?>
+            <span class="badge badge-xs ml-auto <?= esc($item['badge_class'] ?? 'badge-ghost') ?>"><?= esc($item['badge']) ?></span>
+            <?php endif ?>
         </a>
     </li>
     <?php endif; ?>

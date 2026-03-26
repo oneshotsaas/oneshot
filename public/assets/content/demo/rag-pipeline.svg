@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#g)"/>
+  <!-- Pipeline steps -->
+  <g font-family="sans-serif" font-size="11" text-anchor="middle">
+    <!-- Step 1 -->
+    <rect x="50"  y="160" width="110" height="80" rx="10" fill="#312e81" opacity="0.8"/>
+    <text x="105" y="194" fill="#a5b4fc" font-weight="600">Query</text>
+    <text x="105" y="212" fill="#6366f1" font-size="10">User input</text>
+    <!-- Arrow -->
+    <line x1="160" y1="200" x2="195" y2="200" stroke="#4f46e5" stroke-width="2" marker-end="url(#arr)"/>
+    <!-- Step 2 -->
+    <rect x="195" y="160" width="120" height="80" rx="10" fill="#1e3a5f" opacity="0.8"/>
+    <text x="255" y="194" fill="#7dd3fc" font-weight="600">Embed</text>
+    <text x="255" y="212" fill="#38bdf8" font-size="10">Vectorize</text>
+    <!-- Arrow -->
+    <line x1="315" y1="200" x2="350" y2="200" stroke="#4f46e5" stroke-width="2"/>
+    <!-- Step 3 -->
+    <rect x="350" y="160" width="120" height="80" rx="10" fill="#1a3a2e" opacity="0.8"/>
+    <text x="410" y="194" fill="#6ee7b7" font-weight="600">Retrieve</text>
+    <text x="410" y="212" fill="#34d399" font-size="10">Vector DB</text>
+    <!-- Arrow -->
+    <line x1="470" y1="200" x2="505" y2="200" stroke="#4f46e5" stroke-width="2"/>
+    <!-- Step 4 -->
+    <rect x="505" y="160" width="120" height="80" rx="10" fill="#3b1f2b" opacity="0.8"/>
+    <text x="565" y="194" fill="#fca5a5" font-weight="600">Generate</text>
+    <text x="565" y="212" fill="#f87171" font-size="10">LLM prompt</text>
+    <!-- Arrow -->
+    <line x1="625" y1="200" x2="660" y2="200" stroke="#4f46e5" stroke-width="2"/>
+    <!-- Step 5 -->
+    <rect x="660" y="160" width="90" height="80" rx="10" fill="#1c2a1c" opacity="0.8"/>
+    <text x="705" y="194" fill="#bbf7d0" font-weight="600">Answer</text>
+    <text x="705" y="212" fill="#4ade80" font-size="10">Response</text>
+  </g>
+  <!-- Dots top -->
+  <g fill="#4f46e5" opacity="0.3">
+    <circle cx="200" cy="80" r="40"/>
+    <circle cx="600" cy="320" r="50"/>
+  </g>
+</svg>

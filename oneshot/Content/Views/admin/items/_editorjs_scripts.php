@@ -1,0 +1,15 @@
+<script src="/assets/content/editorjs/editor.js"></script>
+<script src="/assets/content/editorjs/header.js"></script>
+<script src="/assets/content/editorjs/quote.js"></script>
+<script src="/assets/content/editorjs/image.js"></script>
+<script src="/assets/content/editorjs/nested-list.js"></script>
+<script src="/assets/content/editorjs/link.js"></script>
+<script src="/assets/content/editorjs/embed.js"></script>
+<script src="/assets/content/editorjs/table.js"></script>
+<script src="/assets/content/editorjs/delimiter.js"></script>
+<script src="/assets/content/editorjs/warning.js"></script>
+<script src="/assets/content/editorjs/code.js"></script>
+<script src="/assets/content/editorjs/raw.js"></script>
+<script src="/assets/content/editorjs/attaches.js"></script>
+<script src="/assets/content/editorjs/inline-code.js"></script>
+<script src="/assets/content/content.js"></script>

@@ -37,6 +37,9 @@ These rules are mandatory for every task, regardless of context:
 ### Creating or modifying database migrations
 → Read **`.ai/agents/migrator.md`** — migration conventions, naming, schema rules.
 
+### Using Playwright CLI for visual testing / screenshots
+→ Read **`.ai/rules/playwright.md`** — working directory, screenshot paths, session management.
+
 ---
 
 ## File Map
@@ -47,7 +50,8 @@ These rules are mandatory for every task, regardless of context:
 ├── rules/
 │   ├── general.md          ← mandatory: naming, DB, security, logging, routing
 │   ├── modules.md          ← module structure, override mechanism, filter placement
-│   └── api.md              ← API response format, auth, status codes
+│   ├── api.md              ← API response format, auth, status codes
+│   └── playwright.md       ← playwright-cli: working dir, screenshots, session management
 ├── skills/
 │   ├── make-module.md      ← how to scaffold a new module end-to-end
 │   └── add-provider.md     ← how to implement Payment/Notify/Mail/Storage contract

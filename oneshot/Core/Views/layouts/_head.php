@@ -40,4 +40,5 @@ $_appName     = option('general.app_name', config('App')->name ?? 'OneShot');
     <?php if (is_file($_cssFile) && filesize($_cssFile) > 0): ?>
     <link rel="stylesheet" href="<?= $_cssUrl ?>?v=<?= filemtime($_cssFile) ?>">
     <?php endif; ?>
+    <link rel="stylesheet" href="<?= base_url('assets/css/content.css') ?>?v=<?= filemtime(FCPATH . 'assets/css/content.css') ?>">
 </head>
