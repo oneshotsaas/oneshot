@@ -33,9 +33,13 @@ class Plans extends Billing
 
     public function store(): \CodeIgniter\HTTP\RedirectResponse
     {
-        $data = $this->request->getPost(['name','slug','description','credits_included','trial_days','features','badge','hide_price','is_active','sort']);
-        $data['features'] = $data['features'] ?: null;
+        $data = $this->request->getPost(['name','slug','description','credits_included','trial_days','trial_credits','features','badge','hide_price','is_active','sort']);
+        $data['features']      = $data['features'] ?: null;
+        $data['trial_credits'] = !empty($data['trial_credits']) ? (int)$data['trial_credits'] : null;
+        $data['hide_price']    = empty($data['hide_price']) ? 0 : 1;
+        $data['is_active']     = empty($data['is_active'])  ? 0 : 1;
         $id = $this->model->add($data);
+        notify(session()->get('user_id'), 'billing.provider_sync_required', __('billing.notify_sync_required', 'Plan prices updated — verify payment provider setup'), site_url(config('Prefixes')->admin . '/billing/install'), []);
         return $this->redirectWith(route_to('admin.billing.plan.prices', signId($id)), __('billing.saved', 'Saved'));
     }
 
@@ -62,15 +66,20 @@ class Plans extends Billing
     public function update(string $hash): \CodeIgniter\HTTP\RedirectResponse
     {
         $id   = signedId($hash);
-        $data = $this->request->getPost(['name','slug','description','credits_included','trial_days','features','badge','hide_price','is_active','sort']);
-        $data['features'] = $data['features'] ?: null;
+        $data = $this->request->getPost(['name','slug','description','credits_included','trial_days','trial_credits','features','badge','hide_price','is_active','sort']);
+        $data['features']      = $data['features'] ?: null;
+        $data['trial_credits'] = !empty($data['trial_credits']) ? (int)$data['trial_credits'] : null;
+        $data['hide_price']    = empty($data['hide_price']) ? 0 : 1;
+        $data['is_active']     = empty($data['is_active'])  ? 0 : 1;
         $this->model->save(array_merge($data, ['id' => $id]));
+        notify(session()->get('user_id'), 'billing.provider_sync_required', __('billing.notify_sync_required', 'Plan prices updated — verify payment provider setup'), site_url(config('Prefixes')->admin . '/billing/install'), []);
         return $this->redirectWith(route_to('admin.billing.plans'), __('billing.saved', 'Saved'));
     }
 
     public function destroy(string $hash): \CodeIgniter\HTTP\RedirectResponse
     {
         $this->model->delete(signedId($hash));
+        notify(session()->get('user_id'), 'billing.provider_sync_required', __('billing.notify_sync_required', 'Plan prices updated — verify payment provider setup'), site_url(config('Prefixes')->admin . '/billing/install'), []);
         return $this->redirectWith(route_to('admin.billing.plans'), __('billing.deleted', 'Deleted'));
     }
 }

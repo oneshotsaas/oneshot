@@ -1,6 +1,6 @@
 <?php
 
-namespace OneShot\Users\Controllers;
+namespace OneShot\Users\Controllers\App;
 
 use OneShot\Core\Controllers\App;
 use OneShot\Auth\Models\User;
@@ -20,12 +20,17 @@ class Profile extends App
 
     public function index(): string
     {
-        $user = $this->users->getById((int) session()->get('user_id'));
+        $userId = (int) session()->get('user_id');
+        $user   = $this->users->getById($userId);
         $this->appendBC(__('users.profile', 'Profile'), route_to('app.profile'));
 
+        $notifier = new \OneShot\Notifications\Services\Notifier();
+
         return $this->render('Users::app/profile', [
-            'user'           => $user,
-            'userThemeMode'  => userOption('appearance.mode', 'dark', (int) session()->get('user_id')),
+            'user'          => $user,
+            'userThemeMode' => userOption('appearance.mode', 'dark', $userId),
+            'notifPrefs'    => $notifier->getPreferences($userId, 'user'),
+            'notifTypes'    => config('NotificationTypes'),
         ]);
     }
 
@@ -33,6 +38,13 @@ class Profile extends App
     {
         $id   = (int) session()->get('user_id');
         $data = ['name' => $this->request->getPost('name')];
+
+        $telegramId = trim($this->request->getPost('telegram_id') ?? '');
+        if ($telegramId !== '') {
+            $data['telegram_id'] = $telegramId;
+        } elseif ($this->request->getPost('telegram_id') !== null) {
+            $data['telegram_id'] = null;
+        }
 
         $this->users->save(array_merge($data, ['id' => $id]));
 

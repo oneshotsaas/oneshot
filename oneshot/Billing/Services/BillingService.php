@@ -490,7 +490,7 @@ class BillingService
                            ->where('id', $promo->id)
                            ->where('is_active', 1)
                            ->where('(max_uses IS NULL OR used_count < max_uses)')
-                           ->update(['used_count' => 'used_count + 1'], false);
+                           ->set('used_count', 'used_count + 1', false)->update();
 
             if ($db->affectedRows() === 0) {
                 $db->transRollback();
@@ -585,6 +585,53 @@ class BillingService
         }
 
         return $this->subscriptions->getById($subId);
+    }
+
+    public function upgradeCredits(int $subId, int $newPlanId, int $remainingDays, int $totalDays, ?int $invoiceId = null): void
+    {
+        if ($remainingDays <= 0) {
+            return;
+        }
+
+        $db = \Config\Database::connect();
+
+        // Idempotency: skip if this invoice was already applied
+        if ($invoiceId !== null) {
+            $sub = $this->subscriptions->getById($subId);
+            if ($sub && (int)$sub->last_upgrade_invoice_id === $invoiceId) {
+                return;
+            }
+        }
+
+        $plan = $this->plans->getById($newPlanId);
+        if (!$plan) {
+            return;
+        }
+
+        $ratio   = $totalDays > 0 ? ($remainingDays / $totalDays) : 0;
+        $credits = round((float)$plan->credits_included * $ratio);
+
+        if ($credits <= 0) {
+            return;
+        }
+
+        $sub = $this->subscriptions->getById($subId);
+        if (!$sub) {
+            return;
+        }
+
+        $this->add($sub->user_id, $credits, 'grant', [
+            'subscription_id' => $subId,
+            'description'     => __('billing.credits_upgraded', 'Upgrade credits'),
+            'credit_source'   => 'upgrade',
+            'data'            => ['new_plan_id' => $newPlanId, 'remaining_days' => $remainingDays, 'total_days' => $totalDays],
+        ]);
+
+        if ($invoiceId !== null) {
+            $db->table('billing_subscriptions')
+               ->where('id', $subId)
+               ->update(['last_upgrade_invoice_id' => $invoiceId]);
+        }
     }
 
     public function cancelSubscription(int $userId): bool
@@ -715,7 +762,7 @@ class BillingService
                ->where('id', $promo->id)
                ->where('is_active', 1)
                ->where('(max_uses IS NULL OR used_count < max_uses)')
-               ->update(['used_count' => 'used_count + 1'], false);
+               ->set('used_count', 'used_count + 1', false)->update();
 
             if ($db->affectedRows() === 0) {
                 $db->transRollback();
@@ -875,7 +922,7 @@ class BillingService
         return $creditsIncluded * ($multiplier[$interval] ?? 1);
     }
 
-    private function calcPromoDiscount(int $price, object $promo): int
+    public function calcPromoDiscount(int $price, object $promo): int
     {
         if ($promo->discount_type === 'percent') {
             return (int) round($price * $promo->discount_value / 100);

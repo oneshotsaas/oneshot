@@ -1,6 +1,6 @@
 <?php
 
-namespace OneShot\Users\Controllers;
+namespace OneShot\Users\Controllers\Admin;
 
 use OneShot\Core\Controllers\Admin;
 use OneShot\Auth\Models\User;

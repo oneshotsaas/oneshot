@@ -6,7 +6,7 @@ A modular PHP framework for building web applications with multiple contexts (pu
 
 ## Directory Structure
 
-```
+```s
 app/                          ← Global overrides (highest priority)
 ├── Config/
 │   ├── Autoload.php          ← PSR-4 namespace registration (4 entries)
@@ -21,14 +21,18 @@ modules/                      ← User custom modules (second priority)
 
 oneshot/                      ← Framework library modules (third priority)
 ├── Core/                     ← Framework kernel
-│   ├── Loader.php            ← Registers sub-namespaces at bootstrap
+│   ├── Loader.php            ← Registers sub-namespaces at bootstrap; loads Config/Notifications.php + Config/Events.php from all modules
 │   ├── Controllers/          ← Base, Front, Admin, App, Api
-│   ├── Models/Base.php
+│   ├── Models/Base.php       ← getAll, getOne, getById, add, addGet, getOrAdd
+│   ├── Models/Event.php      ← table events (uuid, name, payload)
+│   ├── Models/Task.php       ← table tasks (type, payload, status, attempts, retry_after, claimed_at)
 │   ├── Services/Base.php
+│   ├── Services/Dispatcher.php ← event bus: dispatch(), listen(), listenAny()
+│   ├── Services/TaskRunner.php ← async task queue: runOne(int $id), runBatch(int $limit)
 │   ├── Filters/              ← Auth, Admin, ApiFilter
 │   ├── Contracts/            ← Payment, Notify, Storage, Mail interfaces
-│   ├── Helpers/oneshot.php   ← signId, l, rds, __
-│   ├── Commands/             ← make:module, make:migration
+│   ├── Helpers/oneshot.php   ← signId, l, rds, __, event, notify, activity, clientIp
+│   ├── Commands/             ← make:module, make:migration, tasks:run
 │   ├── Views/layouts/        ← front, admin, app, _head, _flash, _breadcrumbs
 │   └── Config/               ← Events.php (auto-discovered), Filters.php
 ├── Auth/                     ← Authentication module
@@ -36,8 +40,9 @@ oneshot/                      ← Framework library modules (third priority)
 ├── Settings/                 ← App settings
 ├── Billing/                  ← Subscriptions and payments
 ├── Content/                  ← Pages, posts, categories, tags + URL resolver
-├── Media/                    ← File uploads (planned)
-└── Notify/                   ← Notification dispatch (planned)
+├── Notifications/            ← Multi-channel notifications (in-app, email, Telegram)
+├── Activity/                 ← Admin event/activity log
+└── Media/                    ← File uploads (planned)
 
 providers/                    ← External service implementations
 ├── Stripe/Stripe.php         ← implements Payment
@@ -168,16 +173,17 @@ Modules read via `$p = config('Prefixes')`.
 
 ## Available Modules
 
-| Module     | Status   | Description                                      |
-|------------|----------|--------------------------------------------------|
-| `Core`     | ✓ Done   | Framework kernel: controllers, models, helpers   |
-| `Auth`     | ✓ Done   | Login, registration, logout, session management  |
-| `Users`    | ✓ Done   | Admin user list, app profile editing             |
-| `Settings` | ✓ Done   | Key-value application settings                   |
-| `Billing`  | ✓ Done   | Subscription plans and payment processing        |
-| `Content`  | ✓ Done   | Pages, posts, nested categories, tags, URL resolver, Editor.js |
-| `Media`    | Planned  | File uploads with structured storage             |
-| `Notify`   | Planned  | Notification dispatch (email, Telegram, etc.)    |
+| Module          | Status   | Description                                      |
+|-----------------|----------|--------------------------------------------------|
+| `Core`          | ✓ Done   | Framework kernel: controllers, models, helpers, event bus, task queue |
+| `Auth`          | ✓ Done   | Login, registration, logout, OAuth, email verification, password reset |
+| `Users`         | ✓ Done   | Admin user list, app profile (name, Telegram ID, notification prefs) |
+| `Settings`      | ✓ Done   | Key-value application settings; supports `json` type + AJAX toggle endpoint |
+| `Billing`       | ✓ Done   | Subscription plans and payment processing        |
+| `Content`       | ✓ Done   | Pages, posts, nested categories, tags, URL resolver, Editor.js |
+| `Notifications` | ✓ Done   | Multi-channel notifications (in-app, email, Telegram); per-user prefs; bell; task queue delivery |
+| `Activity`      | ✓ Done   | Admin activity log auto-populated from Event Bus |
+| `Media`         | Planned  | File uploads with structured storage             |
 
 ---
 
@@ -194,13 +200,17 @@ Modules read via `$p = config('Prefixes')`.
 
 ## Global Helpers (`oneshot/Core/Helpers/oneshot.php`)
 
-| Function              | Description                                    |
-|-----------------------|------------------------------------------------|
-| `signId(int $id)`     | Encode an ID to an opaque hash                 |
-| `signedId(string $h)` | Decode hash back to ID (returns 0 if invalid)  |
-| `l($data, $tag)`      | Append to `writable/logs/{tag}.log`            |
-| `rds(string $key)`    | Acquire a file-based lock (parallel worker guard) |
-| `__($key, $default)`  | Translate with fallback default string         |
+| Function                                            | Description                                             |
+|-----------------------------------------------------|---------------------------------------------------------|
+| `signId(int $id)`                                   | Encode an ID to an opaque hash                          |
+| `signedId(string $h)`                               | Decode hash back to ID (returns 0 if invalid)           |
+| `l($data, $tag)`                                    | Append to `writable/logs/{tag}.log`                     |
+| `rds(string $key)`                                  | Acquire a file-based lock (parallel worker guard)       |
+| `__($key, $default)`                                | Translate with fallback default string                  |
+| `event(string $name, ?array $payload)`              | Dispatch event via Event Bus (persist + listenAny + CI4 Events) |
+| `notify(int $userId, string $type, string $title, string $url, array $data)` | Send notification via Notifier (respects prefs + queue mode) |
+| `activity(string $action, ?string $subjectType, ?int $subjectId, array $metadata, ?int $userId, ?string $ip)` | Write an activity log entry |
+| `clientIp()`                                        | Real client IP; trusts proxy headers only if REMOTE_ADDR is private |
 
 ---
 

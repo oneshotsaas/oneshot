@@ -6,6 +6,7 @@ use OneShot\Core\Services\Base;
 use OneShot\Auth\Models\User;
 use OneShot\Auth\Models\Token;
 use OneShot\Auth\Models\OAuthProvider;
+use OneShot\Auth\Config\EmailDomains;
 use CodeIgniter\Events\Events;
 
 class Auth extends Base
@@ -27,15 +28,16 @@ class Auth extends Base
 
     public function login(string $email, string $password): array
     {
-        $email = mb_strtolower(trim($email));
-        $ip    = service('request')->getIPAddress();
-        $ua    = service('request')->getUserAgent()->getAgentString();
+        $email    = $this->normalizeEmail($email);
+        $password = trim($password);
+        $ip       = service('request')->getIPAddress();
+        $ua       = service('request')->getUserAgent()->getAgentString();
 
         $user = $this->users->findByEmail($email);
 
         // Always run password_verify to prevent timing-based email enumeration
         $hash = $user?->password ?? '$2y$10$usesomesillystringfore2uDLvp1Ii2e./U9C8aNi2nlHsn9X0xfke';
-        if (! password_verify($password, $hash) || $user === null) {
+        if ($password === '' || ! password_verify($password, $hash) || $user === null || $hash === '') {
             l(['event' => 'login_failed', 'email' => $email, 'ip' => $ip, 'ua' => $ua], 'auth');
             return ['success' => false, 'error' => __('auth.invalid_credentials', 'Invalid email or password.')];
         }
@@ -62,12 +64,50 @@ class Auth extends Base
     // Register
     // ------------------------------------------------------------------
 
-    public function register(array $data): array
+    /**
+     * @param array $options {
+     *   send_verification?: bool  — send verification email (default: per auth.email_verification setting)
+     *   status?: string           — override user status (default: per verification setting)
+     * }
+     */
+    public function register(array $data, array $options = []): array
     {
-        $data['email'] = mb_strtolower(trim($data['email']));
+        $data['email'] = $this->normalizeEmail($data['email']);
+
+        // Reserved domain used for anonymised deleted accounts — never allow registration with it
+        if (str_ends_with($data['email'], '@deleted')) {
+            return ['success' => false, 'error' => __('auth.email_invalid', 'Invalid email address.')];
+        }
+
+        // Disposable / blocked domain check
+        $domainError = $this->checkEmailDomain($data['email']);
+        if ($domainError !== null) {
+            return ['success' => false, 'error' => $domainError];
+        }
 
         if ($this->users->findByEmail($data['email']) !== null) {
             return ['success' => false, 'error' => __('auth.email_taken', 'Email already in use.')];
+        }
+
+        // Check if this email belonged to a previously deleted account
+        $emailHash    = hash('sha256', $data['email']);
+        $deletedMatch = $this->users->withDeleted()
+            ->where('deleted_email_hash', $emailHash)
+            ->where('deleted_at IS NOT NULL', null, false)
+            ->first();
+
+        if ($deletedMatch !== null) {
+            $policy = option('auth.deleted_email_policy', 'allow');
+
+            if ($policy === 'block') {
+                return ['success' => false, 'error' => __('auth.email_taken', 'Email already in use.')];
+            }
+
+            if ($policy === 'flag') {
+                l(['event' => 'register_deleted_email', 'email' => $data['email'], 'prev_user_id' => $deletedMatch->id], 'auth');
+            }
+
+            // 'allow' — proceed silently
         }
 
         $pwError = $this->validatePassword($data['password']);
@@ -78,15 +118,15 @@ class Auth extends Base
         $verification    = option('auth.email_verification', 'disabled');
         $data['password']= password_hash($data['password'], PASSWORD_DEFAULT);
         $data['role']    = $data['role'] ?? 'user';
-        $data['status']  = ($verification === 'required') ? 'pending' : 'active';
+        $data['status']  = $options['status'] ?? (($verification === 'required') ? 'pending' : 'active');
 
         $user = $this->users->addGet($data);
 
         l(['event' => 'register', 'email' => $data['email']], 'auth');
         Events::trigger('user.registered', $user);
 
-        // Send verification email
-        if ($verification !== 'disabled') {
+        $sendVerification = $options['send_verification'] ?? ($verification !== 'disabled');
+        if ($sendVerification) {
             $token = $this->tokens->create($user->id, 'verify_email');
             (new MailService())->sendVerification($user, $token);
         }
@@ -244,6 +284,79 @@ class Auth extends Base
             return null;
         }
         return $this->users->getById((int) $id);
+    }
+
+    // ------------------------------------------------------------------
+    // Email helpers
+    // ------------------------------------------------------------------
+
+    /**
+     * Normalise an email address.
+     *
+     * When auth.normalize_email is enabled:
+     *   - strips the +tag suffix from the local part for all addresses
+     *   - additionally removes dots from the local part for Gmail-family domains
+     *     (per EmailDomains::$dotNormalized)
+     */
+    private function normalizeEmail(string $email): string
+    {
+        $email = mb_strtolower(trim($email));
+
+        if (! (bool)(int) option('auth.normalize_email', '0')) {
+            return $email;
+        }
+
+        [$local, $domain] = array_pad(explode('@', $email, 2), 2, '');
+
+        if ($domain === '') {
+            return $email;
+        }
+
+        // Strip +tag for all providers
+        if (($plusPos = strpos($local, '+')) !== false) {
+            $local = substr($local, 0, $plusPos);
+        }
+
+        // Strip dots only for providers that treat them as insignificant
+        if (isset(EmailDomains::$dotNormalized[$domain])) {
+            $local = str_replace('.', '', $local);
+        }
+
+        return $local . '@' . $domain;
+    }
+
+    /**
+     * Check whether the email domain is blocked (disposable list or custom list).
+     * Returns an error string, or null if the domain is allowed.
+     */
+    private function checkEmailDomain(string $email): ?string
+    {
+        $domain = mb_strtolower(substr(strrchr($email, '@'), 1));
+
+        // Trusted domains are always allowed — skip further checks
+        if (isset(EmailDomains::$trusted[$domain])) {
+            return null;
+        }
+
+        // Custom blocked domains from admin settings (any non-domain chars as separator)
+        $customRaw = (string) option('auth.blocked_email_domains', '');
+        if ($customRaw !== '') {
+            $custom = preg_split('/[^a-z0-9.\-]+/i', $customRaw, -1, PREG_SPLIT_NO_EMPTY);
+            foreach ($custom as $blocked) {
+                if (mb_strtolower($blocked) === $domain) {
+                    return __('auth.email_domain_blocked', 'Registration from this email domain is not allowed.');
+                }
+            }
+        }
+
+        // Bundled disposable domain list
+        if ((bool)(int) option('auth.block_disposable_emails', '0')) {
+            if (isset(EmailDomains::$disposable[$domain])) {
+                return __('auth.email_domain_blocked', 'Registration from this email domain is not allowed.');
+            }
+        }
+
+        return null;
     }
 
     // ------------------------------------------------------------------

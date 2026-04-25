@@ -10,6 +10,7 @@ This file is the entry point for all AI work in this project.
 These rules are mandatory for every task, regardless of context:
 
 → Read **`.ai/rules/general.md`** — naming, code style, database, security, logging, routing conventions.
+→ Read **`.ai/rules/ui-ux.md`** — layout, topbar, tables, forms, mobile responsiveness, DaisyUI patterns. **Required for any task that touches a view file.**
 
 ---
 
@@ -49,6 +50,7 @@ These rules are mandatory for every task, regardless of context:
 ├── index.md                ← YOU ARE HERE — read first, always
 ├── rules/
 │   ├── general.md          ← mandatory: naming, DB, security, logging, routing
+│   ├── ui-ux.md            ← mandatory for views: layout, topbar, tables, forms, mobile (DaisyUI+Tailwind)
 │   ├── modules.md          ← module structure, override mechanism, filter placement
 │   ├── api.md              ← API response format, auth, status codes
 │   └── playwright.md       ← playwright-cli: working dir, screenshots, session management

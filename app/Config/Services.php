@@ -19,6 +19,38 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
+    public static function subscriptionPayment(string $provider): \OneShot\Core\Contracts\Payment
+    {
+        return static::resolvePaymentProvider($provider);
+    }
+
+    public static function oneTimePayment(string $provider): \OneShot\Core\Contracts\Payment
+    {
+        return static::resolvePaymentProvider($provider);
+    }
+
+    private static function resolvePaymentProvider(string $name): \OneShot\Core\Contracts\Payment
+    {
+        return match(strtolower($name)) {
+            'stripe'   => new \Providers\Stripe\Stripe(option('billing.stripe_secret_key', '')),
+            default    => throw new \RuntimeException("Unknown payment provider: {$name}"),
+        };
+    }
+
+
+    public static function notify(string $channel = ''): \OneShot\Core\Contracts\Notify
+    {
+        if ($channel === '') {
+            $channel = option('notifications.notify_provider', 'telegram');
+        }
+
+        return match (strtolower($channel)) {
+            'email'    => new \Providers\Email\Email(),
+            'telegram' => new \Providers\Telegram\Telegram(),
+            default    => throw new \RuntimeException("Unknown notify channel: {$channel}"),
+        };
+    }
+
     public static function mailAuth(bool $getShared = true): \OneShot\Auth\Services\MailService
     {
         if ($getShared) {

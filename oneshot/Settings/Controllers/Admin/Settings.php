@@ -48,7 +48,7 @@ class Settings extends Admin
         $post   = $this->request->getPost();
 
         foreach ($fields as $field) {
-            if ($field->type === 'readonly') {
+            if ($field->type === 'readonly' || $field->type === 'json') {
                 continue;
             }
 
@@ -79,5 +79,33 @@ class Settings extends Admin
             route_to('admin.settings.group', $group),
             __('settings.saved', 'Settings saved.')
         );
+    }
+
+    public function toggle(): \CodeIgniter\HTTP\ResponseInterface
+    {
+        if (! $this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'AJAX only']);
+        }
+
+        $settingKey = $this->request->getPost('setting');
+        $field      = $this->request->getPost('field');
+        $enabled    = (bool) $this->request->getPost('enabled');
+
+        if (! $settingKey || ! $field) {
+            return $this->response->setStatusCode(422)->setJSON(['error' => 'Missing params']);
+        }
+
+        $row = $this->setting->getOne(['key' => $settingKey, 'user_id' => null]);
+
+        // Validate row exists and is JSON type
+        if ($row && $row->type !== 'json') {
+            return $this->response->setStatusCode(422)->setJSON(['error' => 'Not a JSON setting']);
+        }
+
+        $current = json_decode($this->setting->fetch($settingKey, '{}', null), true) ?: [];
+        $current[$field] = $enabled;
+        $this->setting->store($settingKey, json_encode($current), null);
+
+        return $this->response->setJSON(['ok' => true, 'csrf_hash' => csrf_hash()]);
     }
 }

@@ -40,6 +40,7 @@ class Items extends Content
         }
 
         $this->share('page_actions_view', 'Content::admin/items/_actions');
+        $this->share('page_subbar_view', 'Content::admin/items/_subbar');
         return $this->render('Content::admin/items/index', [
             'items'      => $items,
             'categories' => category_flat((new Category())->where('deleted_at IS NULL')->orderBy('sort')->orderBy('title')->findAll()),

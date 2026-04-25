@@ -27,6 +27,7 @@ class Filters extends BaseFilters
     public array $aliases = [
         'auth'          => \OneShot\Core\Filters\Auth::class,
         'admin'         => \OneShot\Core\Filters\Admin::class,
+        'api'           => \OneShot\Core\Filters\Api::class,
         'csrf'          => CSRF::class,
         'toolbar'       => DebugToolbar::class,
         'honeypot'      => Honeypot::class,

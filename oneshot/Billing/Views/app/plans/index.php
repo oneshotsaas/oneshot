@@ -44,7 +44,11 @@ foreach ($plans as $plan) {
 <?php foreach ($intervals as $iv): if (!isset($availableIntervals[$iv])) continue; ?>
 <div id="plans-<?= $iv ?>" class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto" style="display:<?= $iv === $activeInterval ? 'grid' : 'none' ?>">
     <?php foreach ($plans as $plan): ?>
-    <?php $pr = $prices[$plan->id][$iv] ?? null; if (!$pr && !$plan->hide_price) continue; ?>
+    <?php
+        $pr      = $prices[$plan->id][$iv] ?? null;
+        $isFree  = empty($prices[$plan->id]);   // plan has no prices at all — free plan
+        if (!$pr && !$plan->hide_price && !$isFree) continue;
+    ?>
     <?php
         $promoTs       = $promoEnds[$plan->id][$iv] ?? null;
         $hasActivePromo = $pr && $pr->promo_price && $promoTs;
@@ -89,6 +93,8 @@ foreach ($plans as $plan) {
             <div class="my-2">
                 <?php if ($plan->hide_price): ?>
                     <p class="text-lg font-semibold"><?= __('billing.contact_us', 'Contact Us') ?></p>
+                <?php elseif ($isFree): ?>
+                    <!-- free plan: no price row -->
                 <?php elseif ($pr): ?>
                     <?php if ($strikePrice): ?>
                     <div class="text-sm line-through opacity-40 tabular-nums">$<?= number_format($strikePrice / 100, 2) ?></div>
@@ -130,7 +136,7 @@ foreach ($plans as $plan) {
                 <a href="mailto:<?= option('site.email', 'hello@example.com') ?>" class="btn btn-outline btn-sm w-full"><?= __('billing.contact_us', 'Contact Us') ?></a>
                 <?php else: ?>
                 <?php $label = $currentPlanId == $plan->id ? __('billing.switch_interval', 'Switch Interval') : __('billing.choose_plan', 'Choose Plan') ?>
-                <a href="<?= route_to('billing.subscribe', signId($plan->id)) ?>?interval=<?= $iv ?>" class="btn btn-primary btn-sm w-full <?= $hasActivePromo ? 'btn-warning' : '' ?>"><?= $label ?></a>
+                <a href="<?= route_to('billing.subscribe', signId($plan->id)) ?><?= $isFree ? '' : '?interval=' . $iv ?>" class="btn btn-primary btn-sm w-full <?= $hasActivePromo ? 'btn-warning' : '' ?>"><?= $label ?></a>
                 <?php endif ?>
             </div>
         </div>

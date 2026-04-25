@@ -4,7 +4,6 @@ namespace OneShot\Core\Commands;
 
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
-use OneShot\Install\Services\Installer;
 
 class AuthSetup extends BaseCommand
 {
@@ -14,7 +13,7 @@ class AuthSetup extends BaseCommand
 
     public function run(array $params): void
     {
-        (new Installer())->seedAuth();
+        (new \OneShot\Auth\Database\Seeds\AuthSeeder())->run();
         CLI::write('Auth settings seeded.', 'green');
     }
 }

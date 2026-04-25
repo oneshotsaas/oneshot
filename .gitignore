@@ -1,3 +1,6 @@
+# Personal workspace (local only)
+.workspace/
+
 # Environment & secrets
 .env
 .env.*
@@ -7,11 +10,7 @@
 vendor/
 
 # CodeIgniter writable
-writable/cache/*
-writable/logs/*
-writable/session/*
-writable/uploads/*
-writable/debugbar/*
+writable/*
 !writable/cache/.gitkeep
 !writable/logs/.gitkeep
 !writable/session/.gitkeep
@@ -34,3 +33,6 @@ public/uploads/
 
 # PHP
 *.log
+
+# Claude Code (local config, plans, screenshots)
+.claude/

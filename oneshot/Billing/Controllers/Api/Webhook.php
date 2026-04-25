@@ -1,12 +1,15 @@
 <?php
 
-namespace OneShot\Billing\Controllers\Admin;
+namespace OneShot\Billing\Controllers\Api;
 
 use OneShot\Core\Controllers\Api;
 use OneShot\Billing\Services\BillingService;
 
 class Webhook extends Api
 {
+    // Token auth is done via URL token — no API key required
+    protected array $public = ['handle'];
+
     public function handle(string $provider, string $token): \CodeIgniter\HTTP\ResponseInterface
     {
         // URL token check — per-provider secret

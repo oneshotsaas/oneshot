@@ -25,8 +25,8 @@ function billingActionBadge(string $action): string {
     return '<span class="badge badge-sm ' . $class . ' font-mono">' . esc($action) . '</span>';
 }
 ?>
-<div class="rounded-lg border border-base-300 overflow-hidden">
-    <table class="table table-sm w-full">
+<div class="rounded-lg border border-base-300 overflow-x-auto overflow-hidden">
+    <table class="table table-sm w-full min-w-max">
         <thead>
             <tr class="bg-base-200 text-xs uppercase tracking-wider opacity-70">
                 <th class="font-semibold"><?= __('billing.date', 'Date') ?></th>
@@ -55,7 +55,7 @@ function billingActionBadge(string $action): string {
                     <?= esc($tx->unit_type ?? '') ?: '<span class="opacity-30">—</span>' ?>
                 </td>
                 <td class="text-right tabular-nums font-mono font-semibold <?= $tx->amount >= 0 ? 'text-success' : 'text-error' ?>">
-                    <?= $tx->amount >= 0 ? '+' : '' ?><?= number_format(abs((float)$tx->amount), 4) ?>
+                    <?= $tx->amount >= 0 ? '+' : '' ?><?= number_format(abs((float)$tx->amount), 2) ?>
                 </td>
             </tr>
             <?php endforeach ?>

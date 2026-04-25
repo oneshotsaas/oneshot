@@ -27,6 +27,9 @@ return [
     // Actions
     'save'                     => 'Save Settings',
 
+    // Notifications section
+    'notif_defaults_hint'      => 'Default notification channels for new users. Users can override these in their profile.',
+
     // Flash messages
     'saved'                    => 'Settings saved.',
 ];

@@ -181,6 +181,54 @@ if (! function_exists('decrypt')) {
     }
 }
 
+if (! function_exists('clientIp')) {
+    function clientIp(): string
+    {
+        $remote = $_SERVER['REMOTE_ADDR'] ?? '';
+        // Trust proxy headers only when REMOTE_ADDR is private/loopback —
+        // meaning traffic is genuinely coming through an internal proxy/LB.
+        $isPrivate = filter_var(
+            $remote,
+            FILTER_VALIDATE_IP,
+            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+        ) === false;
+
+        if ($isPrivate) {
+            foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR'] as $key) {
+                if (!empty($_SERVER[$key])) {
+                    $ip = trim(explode(',', $_SERVER[$key])[0]);
+                    if (filter_var($ip, FILTER_VALIDATE_IP)) return $ip;
+                }
+            }
+        }
+
+        return $remote ?: service('request')->getIPAddress();
+    }
+}
+
+if (! function_exists('event')) {
+    function event(string $name, ?array $payload = null): void
+    {
+        \OneShot\Core\Services\Dispatcher::dispatch($name, $payload);
+    }
+}
+
+if (! function_exists('notify')) {
+    function notify(int $userId, string $type, string $title, string $url = '', array $data = []): void
+    {
+        (new \OneShot\Notifications\Services\Notifier())->notify($userId, $type, $title, $url, $data);
+    }
+}
+
+if (! function_exists('activity')) {
+    function activity(string $action, ?string $subjectType = null, ?int $subjectId = null, array $metadata = [], ?int $userId = null, ?string $ip = null): void
+    {
+        $userId ??= session()->has('user_id') ? (int)session('user_id') : null;
+        $ip     ??= clientIp();
+        (new \OneShot\Activity\Services\Activity())->log($userId, $action, $subjectType, $subjectId, $metadata, $ip);
+    }
+}
+
 if (! function_exists('__')) {
     function __(string $key, string $default = ''): string
     {

@@ -51,8 +51,10 @@ class PlanPrices extends Billing
             'currency'          => $post['currency'] ?? 'usd',
             'discount_pct'      => !empty($post['discount_pct']) ? (int)$post['discount_pct'] : null,
             'promo_discount_pct'=> !empty($post['promo_discount_pct']) ? (int)$post['promo_discount_pct'] : null,
+            'credits_grant'     => in_array($post['credits_grant'] ?? '', ['full', 'monthly']) ? $post['credits_grant'] : 'full',
         ];
         $this->model->add($data);
+        notify(session()->get('user_id'), 'billing.provider_sync_required', __('billing.notify_sync_required', 'Plan prices updated — verify payment provider setup'), site_url(config('Prefixes')->admin . '/billing/install'), []);
         return $this->redirectWith(route_to('admin.billing.plan.prices', $planHash), __('billing.saved', 'Saved'));
     }
 
@@ -70,14 +72,17 @@ class PlanPrices extends Billing
             'currency'          => $post['currency'] ?? 'usd',
             'discount_pct'      => !empty($post['discount_pct']) ? (int)$post['discount_pct'] : null,
             'promo_discount_pct'=> !empty($post['promo_discount_pct']) ? (int)$post['promo_discount_pct'] : null,
+            'credits_grant'     => in_array($post['credits_grant'] ?? '', ['full', 'monthly']) ? $post['credits_grant'] : 'full',
         ];
         $this->model->save($data);
+        notify(session()->get('user_id'), 'billing.provider_sync_required', __('billing.notify_sync_required', 'Plan prices updated — verify payment provider setup'), site_url(config('Prefixes')->admin . '/billing/install'), []);
         return $this->redirectWith(route_to('admin.billing.plan.prices', $planHash), __('billing.saved', 'Saved'));
     }
 
     public function destroy(string $planHash, string $hash): \CodeIgniter\HTTP\RedirectResponse
     {
         $this->model->delete(signedId($hash));
+        notify(session()->get('user_id'), 'billing.provider_sync_required', __('billing.notify_sync_required', 'Plan prices updated — verify payment provider setup'), site_url(config('Prefixes')->admin . '/billing/install'), []);
         return $this->redirectWith(route_to('admin.billing.plan.prices', $planHash), __('billing.deleted', 'Deleted'));
     }
 }

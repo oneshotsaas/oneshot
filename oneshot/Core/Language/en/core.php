@@ -22,5 +22,9 @@ return [
     'built_on'    => '— Built on OneShot',
     'privacy'     => 'Privacy',
     'terms'       => 'Terms',
-    'all_rights'  => 'All rights reserved.',
+    'all_rights'        => 'All rights reserved.',
+
+    // API
+    'not_found'         => 'Not found.',
+    'nothing_to_update' => 'Nothing to update.',
 ];

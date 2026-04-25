@@ -1,6 +1,6 @@
 /**
  * Settings module JS
- * Handles: theme pickers, section tabs, mode tabs
+ * Handles: theme pickers, section tabs, mode tabs, notification defaults toggles
  */
 
 // Enable live theme preview on this page
@@ -67,6 +67,39 @@ document.querySelectorAll('.section-tab').forEach(function (btn) {
         });
     });
 });
+
+// ── Admin Notification Defaults Toggles ──────────────────────────────────────
+(function () {
+    var meta = document.getElementById('js-notif-defaults');
+    if (!meta) return;
+
+    var url      = meta.dataset.url;
+    var csrfName = meta.dataset.csrfName;
+    var csrfHash = meta.dataset.csrfHash;
+
+    document.querySelectorAll('.admin-notif-toggle').forEach(function (el) {
+        el.addEventListener('change', function () {
+            var toggle = this;
+            var body   = new URLSearchParams();
+            body.set(csrfName, csrfHash);
+            body.set('setting', toggle.dataset.setting);
+            body.set('field',   toggle.dataset.field);
+            body.set('enabled', toggle.checked ? '1' : '0');
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body,
+            }).then(function (r) {
+                if (r.ok) {
+                    r.json().then(function (d) { if (d.csrf_hash) csrfHash = d.csrf_hash; });
+                } else {
+                    toggle.checked = !toggle.checked;
+                }
+            }).catch(function () { toggle.checked = !toggle.checked; });
+        });
+    });
+}());
 
 // ── Mode Tabs (Light / Dark) ──────────────────────────────────────────────────
 document.querySelectorAll('.mode-tab').forEach(function (btn) {

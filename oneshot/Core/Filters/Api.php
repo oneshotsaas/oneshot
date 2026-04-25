@@ -6,12 +6,11 @@ use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 
-class ApiFilter implements FilterInterface
+class Api implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null): mixed
     {
-        // Base API filter — token validation handled per-controller via checkToken()
-        return null;
+        return (new \OneShot\Keys\Filters\ApiKey())->before($request, $arguments);
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null): mixed

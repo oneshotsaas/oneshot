@@ -32,11 +32,12 @@ class Promotions extends Billing
 
     public function store(): \CodeIgniter\HTTP\RedirectResponse
     {
-        $data         = $this->request->getPost(['code','description','discount_type','discount_value','applies_to','max_uses','valid_from','valid_until','is_active']);
+        $data         = $this->request->getPost(['code','description','discount_type','discount_value','subscription_discount_duration','applies_to','max_uses','valid_from','valid_until','is_active']);
         $data['code'] = strtoupper(trim($data['code']));
         $data['max_uses']   = !empty($data['max_uses'])   ? (int)$data['max_uses']   : null;
         $data['valid_from'] = !empty($data['valid_from']) ? $data['valid_from'] : null;
         $data['valid_until']= !empty($data['valid_until'])? $data['valid_until'] : null;
+        $data['subscription_discount_duration'] = in_array($data['subscription_discount_duration'] ?? '', ['once', 'forever']) ? $data['subscription_discount_duration'] : 'once';
         $this->model->add($data);
         return $this->redirectWith(route_to('admin.billing.promotions'), __('billing.saved', 'Saved'));
     }
@@ -55,11 +56,12 @@ class Promotions extends Billing
     public function update(string $hash): \CodeIgniter\HTTP\RedirectResponse
     {
         $id   = signedId($hash);
-        $data = $this->request->getPost(['code','description','discount_type','discount_value','applies_to','max_uses','valid_from','valid_until','is_active']);
+        $data = $this->request->getPost(['code','description','discount_type','discount_value','subscription_discount_duration','applies_to','max_uses','valid_from','valid_until','is_active']);
         $data['code']       = strtoupper(trim($data['code']));
         $data['max_uses']   = !empty($data['max_uses'])   ? (int)$data['max_uses']   : null;
         $data['valid_from'] = !empty($data['valid_from']) ? $data['valid_from'] : null;
         $data['valid_until']= !empty($data['valid_until'])? $data['valid_until'] : null;
+        $data['subscription_discount_duration'] = in_array($data['subscription_discount_duration'] ?? '', ['once', 'forever']) ? $data['subscription_discount_duration'] : 'once';
         $this->model->save(array_merge($data, ['id' => $id]));
         return $this->redirectWith(route_to('admin.billing.promotions'), __('billing.saved', 'Saved'));
     }

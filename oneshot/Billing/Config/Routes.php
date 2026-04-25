@@ -15,6 +15,10 @@ $routes->group($p->app, ['filter' => 'auth'], function ($r) {
     $r->get('billing/usage',                    '\OneShot\Billing\Controllers\App\Usage::index',            ['as' => 'billing.usage']);
     $r->get('billing/invoices',                 '\OneShot\Billing\Controllers\App\Invoice::index',          ['as' => 'billing.invoices']);
     $r->get('billing/invoices/(:segment)',       '\OneShot\Billing\Controllers\App\Invoice::show/$1',        ['as' => 'billing.invoice']);
+    $r->post('billing/portal',                  '\OneShot\Billing\Controllers\App\Subscribe::portal',        ['as' => 'billing.portal']);
+    $r->get('billing/subscribe-cancel',         '\OneShot\Billing\Controllers\App\Subscribe::cancelled',     ['as' => 'billing.subscribe.cancelled']);
+    $r->get('billing/packages/select-provider/(:segment)', '\OneShot\Billing\Controllers\App\Packages::selectProvider/$1', ['as' => 'billing.packages.select_provider']);
+    $r->post('billing/packages/buy/(:segment)/(:any)', '\OneShot\Billing\Controllers\App\Packages::buyWithProvider/$1/$2', ['as' => 'billing.packages.buy_with_provider']);
 });
 
 // Admin routes
@@ -73,11 +77,17 @@ $routes->group($p->admin, ['filter' => 'admin'], function ($r) {
     $r->post('billing/topup/(:segment)',                    '\OneShot\Billing\Controllers\Admin\TopUp::store/$1');
 
     // Setup / Installer
-    $r->get( 'billing/install',         '\OneShot\Billing\Controllers\Admin\Install::index',           ['as' => 'admin.billing.install']);
-    $r->post('billing/install/demo',    '\OneShot\Billing\Controllers\Admin\Install::seedDemo',        ['as' => 'admin.billing.install.demo']);
-    $r->post('billing/install/settings','\OneShot\Billing\Controllers\Admin\Install::saveSettings',   ['as' => 'admin.billing.install.settings']);
-    $r->post('billing/install/token',   '\OneShot\Billing\Controllers\Admin\Install::regenerateToken',['as' => 'admin.billing.install.token']);
+    $r->get( 'billing/install',                         '\OneShot\Billing\Controllers\Admin\Install::index',           ['as' => 'admin.billing.install']);
+    $r->post('billing/install/demo',                    '\OneShot\Billing\Controllers\Admin\Install::seedDemo',        ['as' => 'admin.billing.install.demo']);
+    $r->post('billing/install/settings',                '\OneShot\Billing\Controllers\Admin\Install::saveSettings',    ['as' => 'admin.billing.install.settings']);
+    $r->post('billing/install/token',                   '\OneShot\Billing\Controllers\Admin\Install::regenerateToken', ['as' => 'admin.billing.install.token']);
+    $r->post('billing/install/sync/(:alpha)',            '\OneShot\Billing\Controllers\Admin\Install::syncProvider/$1', ['as' => 'admin.billing.install.sync']);
+    $r->get( 'billing/install/status/(:alpha)',          '\OneShot\Billing\Controllers\Admin\Install::statusProvider/$1', ['as' => 'admin.billing.install.status']);
+
+    // Transactions refund
+    $r->get( 'billing/transactions/(:segment)/refund',   '\OneShot\Billing\Controllers\Admin\Transactions::refundForm/$1', ['as' => 'admin.billing.transaction.refund']);
+    $r->post('billing/transactions/(:segment)/refund',   '\OneShot\Billing\Controllers\Admin\Transactions::refund/$1');
 });
 
 // Webhook — no auth filter, token in URL
-$routes->post('api/v1/billing/webhook/(:segment)/(:segment)', '\OneShot\Billing\Controllers\Admin\Webhook::handle/$1/$2', ['as' => 'billing.webhook']);
+$routes->post('api/v1/billing/webhook/(:segment)/(:segment)', '\OneShot\Billing\Controllers\Api\Webhook::handle/$1/$2', ['as' => 'billing.webhook']);

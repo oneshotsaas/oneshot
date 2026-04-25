@@ -22,6 +22,7 @@ class Usage extends Billing
         $pager        = $model->pager;
 
         $this->share('page_actions_view', 'Billing::app/usage/_filters');
+        $this->share('page_subbar_view', 'Billing::app/usage/_subbar');
         return $this->render('Billing::app/usage/index', compact('transactions', 'pager', 'filters'));
     }
 }

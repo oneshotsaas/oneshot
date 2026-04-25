@@ -65,6 +65,7 @@ return [
     'per_year'             => '/year',
     'contact_us'           => 'Contact Us',
     'save_pct'             => 'Save %d%%',
+    'key_leave_blank'      => 'Leave blank to keep current',
     'popular'              => 'Popular',
     'best_value'           => 'Best Value',
     'choose_plan'          => 'Choose Plan',
@@ -260,6 +261,95 @@ return [
     'webhook_secret_stripe_hint'    => 'Random token embedded in the webhook URL. Register this URL in Stripe: /api/v1/billing/webhook/stripe/{this_token}',
     'webhook_secret_coinbase'       => 'Coinbase Webhook URL Token',
     'webhook_secret_coinbase_hint'  => 'Random token embedded in the webhook URL. Register this URL in Coinbase: /api/v1/billing/webhook/coinbase/{this_token}',
+
+    // Provider settings
+    'subscription_provider'          => 'Subscription Payment Provider',
+    'subscription_provider_hint'     => 'Provider(s) used for recurring subscriptions.',
+    'payment_provider'               => 'One-time Payment Provider',
+    'payment_provider_hint'          => 'Provider(s) used for one-time purchases (packages, top-ups). If multiple — user selects at checkout.',
+    'upgrade_collection_method'      => 'Upgrade Payment Method',
+    'upgrade_collection_method_hint' => 'send_invoice — user is redirected to Stripe to pay manually; charge_automatically — card on file is charged immediately.',
+
+    // Provider sync
+    'providers'                      => 'Providers',
+    'provider_sync'                  => 'Provider Sync',
+    'provider_sync_desc'             => 'Synchronize plans and prices with configured payment providers.',
+    'sync_all'                       => 'Sync All',
+    'sync_status'                    => 'Sync Status',
+    'sync_status_ok'                 => 'Synced',
+    'sync_status_outdated'           => 'Outdated',
+    'sync_status_missing'            => 'Not synced',
+    'sync_ok'                        => 'synced',
+    'sync_all_ok'                    => 'All prices synced',
+    'sync_outdated'                  => 'outdated',
+    'sync_missing'                   => 'missing',
+    'sync_result'                    => 'Synced: %d, archived: %d, skipped: %d',
+    'notify_sync_required'           => 'Plan prices updated — verify payment provider setup',
+    'api_key_ok'                     => 'API key set',
+    'api_key_missing'                => 'no API key',
+    'no_prices'                      => 'No prices',
+
+    // Trial credits
+    'trial_credits'                  => 'Trial Credits',
+    'trial_credits_hint'             => 'Credits granted during trial. Leave empty for proportional calculation (trial_days / 30 × credits_included).',
+
+    // Credits grant
+    'credits_grant'                  => 'Credits Grant Mode',
+    'credits_grant_hint'             => 'full — all credits at once; monthly — credits_included per month (TaskRunner required for annual plans).',
+    'credits_grant_full'             => 'Full (all at once)',
+    'credits_grant_monthly'          => 'Monthly (per-month via queue)',
+
+    // Subscription discount duration
+    'subscription_discount_duration'      => 'Subscription Discount Duration',
+    'subscription_discount_duration_hint' => 'once — discount only on first payment; forever — discount on all renewals.',
+    'discount_duration_once'              => 'Once (first payment only)',
+    'discount_duration_forever'           => 'Forever (all renewals)',
+    'duration_once'                       => 'once — first payment only',
+    'duration_forever'                    => 'forever — all payments',
+
+    // Stripe provider flow
+    'payment_unavailable'            => 'Payment is temporarily unavailable. Please try again later.',
+    'redirecting_to_payment'         => 'Redirecting to payment...',
+    'upgrade_invoice_sent'           => 'An invoice has been generated. Please complete your payment.',
+    'subscription_upgraded'          => 'Subscription upgraded successfully',
+    'portal_redirect'                => 'Redirecting to billing portal...',
+    'cancel_at_period_end'           => 'Subscription is active until %s',
+    'select_payment_provider'        => 'Select Payment Method',
+    'select_provider_desc'           => 'Choose how you would like to pay.',
+    'checkout_cancelled'             => 'Checkout cancelled',
+    'checkout_cancelled_desc'        => 'Your payment was not processed. No charges were made.',
+    'view_plans'                     => 'View Plans',
+
+    // Refunds
+    'refund'                         => 'Refund',
+    'issue_refund'                   => 'Issue Refund',
+    'refund_amount'                  => 'Refund Amount',
+    'refund_amount_hint'             => 'Amount to refund in dollars. Must not exceed the original invoice amount.',
+    'credits_action'                 => 'Credits Action',
+    'credits_action_hint'            => 'What to do with credits that were granted for this invoice.',
+    'credits_action_proportional'    => 'proportional — deduct pro-rata based on refund amount',
+    'credits_action_all'             => 'all — deduct all credits granted by this invoice',
+    'credits_action_none'            => 'none — keep credits, refund money only',
+    'refund_preview_balance'         => 'Current balance',
+    'refund_preview_granted'         => 'Credits from this invoice',
+    'refund_preview_deduct'          => 'Credits to deduct',
+    'refund_preview_after'           => 'Balance after refund',
+    'preview_credits_to_deduct'      => 'Credits to deduct',
+    'preview_balance_after'          => 'Balance after refund',
+    'invoice_amount'                 => 'Invoice Amount',
+    'credits_granted'                => 'Credits Granted',
+    'current_balance'                => 'Current Balance',
+    'refund_issued'                  => 'Refund issued',
+    'refund_failed'                  => 'Failed to issue refund',
+    'charge_id_missing'              => 'No charge ID found for this invoice',
+
+    // Notifications
+    'notify_invoice_paid'            => 'Payment confirmed — :credits credits added',
+    'notify_subscription_upgraded'   => 'Subscription upgraded',
+    'notify_payment_failed'          => 'Payment failed — please update your payment method',
+    'notify_package_purchased'       => 'Package purchased — +%s credits added',
+    'notify_subscription_canceled'   => 'Subscription canceled, active until %s',
+    'notify_refund_issued'           => 'Refund of :amount issued',
 
     // Errors / messages
     'insufficient_credits' => 'Insufficient credits',

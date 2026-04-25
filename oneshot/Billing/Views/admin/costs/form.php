@@ -2,19 +2,19 @@
 <form method="post">
     <?= csrf_field() ?>
     <div class="card bg-base-200 shadow">
-        <div class="card-body gap-4">
+        <div class="card-body p-4 sm:p-6 gap-4">
 
-            <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+            <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                 <span class="text-sm opacity-60"><?= __('billing.action_name', 'Action') ?> <span class="opacity-50 text-xs">e.g. image.generate.dall-e-3</span></span>
                 <input type="text" name="action" value="<?= esc($cost->action ?? '') ?>" class="input input-sm input-bordered font-mono" required>
             </div>
 
-            <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+            <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                 <span class="text-sm opacity-60"><?= __('billing.label', 'Label') ?></span>
                 <input type="text" name="label" value="<?= esc($cost->label ?? '') ?>" class="input input-sm input-bordered" required>
             </div>
 
-            <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+            <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                 <span class="text-sm opacity-60"><?= __('billing.unit_type', 'Unit Type') ?></span>
                 <select name="unit_type" id="unit_type" class="select select-sm select-bordered" onchange="updateMetaHint()">
                     <?php foreach (['unit','second','token'] as $ut): ?>
@@ -23,12 +23,12 @@
                 </select>
             </div>
 
-            <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+            <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                 <span class="text-sm opacity-60"><?= __('billing.cost_per_unit', 'Cost per Unit') ?></span>
                 <input type="text" name="cost_per_unit" value="<?= esc($cost->cost_per_unit ?? '1.0000') ?>" class="input input-sm input-bordered" required>
             </div>
 
-            <div class="grid grid-cols-[12rem_1fr] items-start gap-x-6">
+            <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                 <span class="text-sm opacity-60 pt-1">
                     <?= __('billing.meta', 'Meta (JSON)') ?>
                     <a href="#" onclick="insertMetaExample(event)" class="link link-primary text-xs block mt-1">example</a>
@@ -37,7 +37,7 @@
                 <textarea name="meta" id="meta" rows="8" class="textarea textarea-sm textarea-bordered font-mono"><?= esc($cost->meta ?? '') ?></textarea>
             </div>
 
-            <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+            <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                 <span class="text-sm opacity-60"><?= __('billing.active', 'Active') ?></span>
                 <input type="checkbox" name="is_active" value="1" class="checkbox checkbox-sm" <?= !isset($cost->is_active) || $cost->is_active ? 'checked' : '' ?>>
             </div>

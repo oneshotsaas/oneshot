@@ -34,5 +34,16 @@ class Loader
         foreach (glob(ROOTPATH . 'modules/*/Helpers/*.php') as $file) {
             require_once $file;
         }
+
+        // Notification type registration — declarative, no side effects
+        foreach (glob(ROOTPATH . 'oneshot/*/Config/Notifications.php') as $file) {
+            if (str_contains($file, DIRECTORY_SEPARATOR . 'Notifications' . DIRECTORY_SEPARATOR)) continue;
+            $def = require $file;
+            \OneShot\Notifications\Config\NotificationTypes::register($def['types'] ?? [], $def['groups'] ?? []);
+        }
+        foreach (glob(ROOTPATH . 'modules/*/Config/Notifications.php') as $file) {
+            $def = require $file;
+            \OneShot\Notifications\Config\NotificationTypes::register($def['types'] ?? [], $def['groups'] ?? []);
+        }
     }
 }

@@ -153,7 +153,15 @@ This applies to all usages: `share()` calls, partial rendering, anywhere. There 
 
 ## Views — i18n
 - **Never hardcode UI strings in views** — always wrap in `__('key', 'Fallback text')`
-- This applies to all visible text: labels, hints, placeholders, button text, etc.
+- This applies to **every string visible to the user**, regardless of where it is defined: labels, hints, placeholders, button text, table column headers, empty-state messages, confirmation dialogs, tooltip `data-tip` values, badge text, modal titles — no exceptions.
+- **Controllers are not exempt** — flash messages, validation errors, API response messages, and any other user-facing strings set in a controller must also use `__()`:
+  ```php
+  // Wrong:
+  $this->redirectWith('route', 'error', 'Invalid credentials.');
+  // Correct:
+  $this->redirectWith('route', 'error', __('auth.invalid_credentials', 'Invalid credentials.'));
+  ```
+- Add every new key to the module's language file in the same change — never leave a key without an entry.
 - Key format: `{module}.{key}` — e.g. `auth.email`, `core.login`, `users.save`
 - `__()` does NOT support placeholders — use `sprintf()` for dynamic values:
   ```php
@@ -323,7 +331,7 @@ Rules:
 ## Views — Render Paths
 
 The `render()` helper resolves `Module::path/to/view` by prepending `OneShot\` to the module name.
-
+ц
 **Correct** — module name only, no namespace prefix:
 ```php
 $this->render('Billing::app/dashboard/index')   // → OneShot\Billing\Views/app/dashboard/index.php

@@ -4,6 +4,7 @@ namespace OneShot\Billing\Controllers\Admin;
 
 use OneShot\Settings\Models\Setting;
 use OneShot\Billing\Models\{Plan, PlanPrice, Package};
+use OneShot\Billing\Services\BillingService;
 
 class Install extends Billing
 {
@@ -35,6 +36,11 @@ class Install extends Billing
         foreach ($this->settingsMeta() as $key => $meta) {
             $field = str_replace('.', '_', $key);
             if (isset($post[$field])) {
+                // Skip password fields when submitted empty — preserve existing value
+                if (($meta['type'] ?? '') === 'password' && $post[$field] === '') {
+                    $this->syncMeta($setting, $key, $meta);
+                    continue;
+                }
                 $setting->store($key, $post[$field]);
             }
             $this->syncMeta($setting, $key, $meta);
@@ -73,6 +79,22 @@ class Install extends Billing
             'billing.coinbase_webhook_secret'  => ['type' => 'password', 'sort' => 21],
             'billing.webhook_secret_stripe'    => ['type' => 'password', 'sort' => 13],
             'billing.webhook_secret_coinbase'  => ['type' => 'password', 'sort' => 22],
+            'billing.subscription_provider' => [
+                'type'    => 'text',
+                'sort'    => 30,
+            ],
+            'billing.payment_provider' => [
+                'type'    => 'text',
+                'sort'    => 31,
+            ],
+            'billing.upgrade_collection_method' => [
+                'type'    => 'select',
+                'options' => json_encode([
+                    ['value' => 'send_invoice',        'label' => 'send_invoice — user pays manually via Stripe invoice page'],
+                    ['value' => 'charge_automatically','label' => 'charge_automatically — charge card on file immediately'],
+                ]),
+                'sort' => 32,
+            ],
         ];
     }
 
@@ -87,6 +109,106 @@ class Install extends Billing
             'options' => $meta['options'] ?? null,
             'sort'    => $meta['sort'] ?? null,
         ], fn($v) => $v !== null));
+    }
+
+    public function syncProvider(string $provider): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $allowedProviders = ['stripe'];
+        if (!in_array($provider, $allowedProviders, true)) {
+            return $this->fail('Unknown provider');
+        }
+
+        try {
+            $p       = service('subscriptionPayment', $provider);
+            $billing = new BillingService();
+            $synced  = 0;
+            $archived = 0;
+            $skipped  = 0;
+            $errors  = [];
+
+            $plans = (new Plan())->where('deleted_at IS NULL')->where('is_active', 1)->findAll();
+
+            foreach ($plans as $plan) {
+                try {
+                    // Sync product
+                    $productRef = $billing->getProviderRef('plan', $plan->id, $provider);
+                    if ($productRef) {
+                        // Product is mutable — update name/description
+                        $p->createOrUpdateProduct($plan->name, $plan->description ?? $plan->name);
+                    } else {
+                        $product = $p->createOrUpdateProduct($plan->name, $plan->description ?? $plan->name);
+                        $billing->setProviderRef('plan', $plan->id, $provider, $product['id']);
+                    }
+
+                    $productRef = $billing->getProviderRef('plan', $plan->id, $provider);
+                    if (!$productRef) continue;
+
+                    // Sync prices
+                    $prices = (new PlanPrice())->getForPlan($plan->id);
+                    foreach ($prices as $price) {
+                        try {
+                            $priceRef = $billing->getProviderRef('plan_price', $price->id, $provider);
+                            $snapshot = ['amount' => (int)$price->price, 'currency' => $price->currency, 'interval' => $price->interval];
+
+                            if (!$priceRef) {
+                                $result = $p->createPrice($productRef->ref_id, (int)$price->price, $price->currency, $price->interval);
+                                $billing->setProviderRef('plan_price', $price->id, $provider, $result['id'], $snapshot);
+                                $synced++;
+                            } else {
+                                $meta = $priceRef->meta ? json_decode($priceRef->meta, true) : [];
+                                if ($meta === $snapshot) {
+                                    $skipped++;
+                                } else {
+                                    // Archive old, create new
+                                    $p->archivePrice($priceRef->ref_id);
+                                    $archived++;
+                                    $result = $p->createPrice($productRef->ref_id, (int)$price->price, $price->currency, $price->interval);
+                                    $billing->setProviderRef('plan_price', $price->id, $provider, $result['id'], $snapshot);
+                                    $synced++;
+                                }
+                            }
+                        } catch (\RuntimeException $e) {
+                            l(['price_id' => $price->id, 'error' => $e->getMessage()], 'billing_sync');
+                            $errors[] = 'Price #' . $price->id . ': ' . $e->getMessage();
+                        }
+                    }
+                } catch (\RuntimeException $e) {
+                    l(['plan_id' => $plan->id, 'error' => $e->getMessage()], 'billing_sync');
+                    $errors[] = 'Plan #' . $plan->id . ': ' . $e->getMessage();
+                }
+            }
+
+            return $this->response->setJSON(['ok' => true, 'synced' => $synced, 'archived' => $archived, 'skipped' => $skipped, 'errors' => $errors]);
+
+        } catch (\RuntimeException $e) {
+            return $this->response->setStatusCode(422)->setJSON(['ok' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function statusProvider(string $provider): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $billing = new BillingService();
+        $plans   = (new Plan())->where('deleted_at IS NULL')->findAll();
+        $result  = [];
+
+        foreach ($plans as $plan) {
+            $prices     = (new PlanPrice())->getForPlan($plan->id);
+            $planStatus = [];
+            foreach ($prices as $price) {
+                $ref      = $billing->getProviderRef('plan_price', $price->id, $provider);
+                $snapshot = ['amount' => (int)$price->price, 'currency' => $price->currency, 'interval' => $price->interval];
+                if (!$ref) {
+                    $status = 'missing';
+                } else {
+                    $meta = $ref->meta ? json_decode($ref->meta, true) : [];
+                    $status = ($meta === $snapshot) ? 'ok' : 'outdated';
+                }
+                $planStatus[] = ['price_id' => $price->id, 'interval' => $price->interval, 'status' => $status];
+            }
+            $result[] = ['plan_id' => $plan->id, 'plan_name' => $plan->name, 'prices' => $planStatus];
+        }
+
+        return $this->response->setJSON(['ok' => true, 'plans' => $result]);
     }
 
     public function regenerateToken(): \CodeIgniter\HTTP\RedirectResponse
@@ -106,22 +228,63 @@ class Install extends Billing
         $planCount    = (new Plan())->where('deleted_at IS NULL')->countAllResults();
         $packageCount = (new Package())->where('deleted_at IS NULL')->countAllResults();
 
-        $providers = [];
+        $legacyProviders = [];
         foreach (['stripe', 'coinbase'] as $p) {
-            $providers[$p] = [
+            $legacyProviders[$p] = [
                 'api_key'        => !empty(option('billing.' . $p . (($p === 'stripe') ? '_secret_key' : '_api_key'))),
                 'webhook_secret' => !empty(option('billing.' . $p . '_webhook_secret')),
                 'url_token'      => option('billing.webhook_secret_' . $p, ''),
             ];
         }
 
+        // Build provider sync status
+        $billing  = new BillingService();
+        $allPlans = (new Plan())->where('deleted_at IS NULL')->findAll();
+
+        $configuredProviders = array_unique(array_filter(array_merge(
+            array_map('trim', explode(',', option('billing.subscription_provider', 'stripe'))),
+            array_map('trim', explode(',', option('billing.payment_provider', 'stripe')))
+        )));
+
+        $providerSyncStatus = [];
+        foreach ($configuredProviders as $providerName) {
+            if (empty($providerName)) continue;
+            $planRows = [];
+            foreach ($allPlans as $plan) {
+                $prices    = (new PlanPrice())->getForPlan($plan->id);
+                $priceRows = [];
+                foreach ($prices as $price) {
+                    $ref      = $billing->getProviderRef('plan_price', $price->id, $providerName);
+                    $snapshot = ['amount' => (int)$price->price, 'currency' => $price->currency, 'interval' => $price->interval];
+                    if (!$ref) {
+                        $syncStatus = 'missing';
+                    } else {
+                        $meta = $ref->meta ? json_decode($ref->meta, true) : [];
+                        $syncStatus = ($meta === $snapshot) ? 'ok' : 'outdated';
+                    }
+                    $priceRows[] = ['id' => $price->id, 'interval' => $price->interval, 'status' => $syncStatus];
+                }
+                $planRows[] = ['id' => $plan->id, 'name' => $plan->name, 'prices' => $priceRows];
+            }
+            $apiKey = match($providerName) {
+                'stripe'   => !empty(option('billing.stripe_secret_key', '')),
+                'coinbase' => !empty(option('billing.coinbase_api_key', '')),
+                default    => false,
+            };
+            $providerSyncStatus[$providerName] = ['api_key' => $apiKey, 'plans' => $planRows];
+        }
+
         return [
-            'overdraft_mode'  => option('billing.overdraft_mode', 'deny'),
-            'overdraft_limit' => option('billing.overdraft_limit', '-50'),
-            'stripe'          => $providers['stripe'],
-            'coinbase'        => $providers['coinbase'],
-            'plan_count'      => $planCount,
-            'package_count'   => $packageCount,
+            'overdraft_mode'           => option('billing.overdraft_mode', 'deny'),
+            'overdraft_limit'          => option('billing.overdraft_limit', '-50'),
+            'subscription_provider'    => option('billing.subscription_provider', 'stripe'),
+            'payment_provider'         => option('billing.payment_provider', 'stripe'),
+            'upgrade_collection_method'=> option('billing.upgrade_collection_method', 'send_invoice'),
+            'stripe'                   => $legacyProviders['stripe'],
+            'coinbase'                 => $legacyProviders['coinbase'],
+            'plan_count'               => $planCount,
+            'package_count'            => $packageCount,
+            'provider_sync'            => $providerSyncStatus,
         ];
     }
 

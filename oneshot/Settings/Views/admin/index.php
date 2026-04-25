@@ -10,8 +10,9 @@ foreach ($fields as $f) {
     $values[$f->key] = option($f->key, '');
 }
 
-$isAppearance = $activeGroup === 'appearance';
-$sections     = ['admin', 'app', 'front'];
+$isAppearance    = $activeGroup === 'appearance';
+$isNotifications = $activeGroup === 'notifications';
+$sections        = ['admin', 'app', 'front'];
 $modes        = ['light', 'dark'];
 
 // For appearance: preload all theme CSS files so swatches render correctly
@@ -33,11 +34,11 @@ endif;
 ?>
 
 <div data-live-theme="1" id="settings-page">
-<div class="flex gap-6 min-h-0">
+<div class="flex flex-col sm:flex-row gap-6 min-h-0">
 
     <!-- Group nav -->
-    <aside class="w-44 shrink-0">
-        <ul class="menu menu-sm bg-base-200 rounded-xl p-2 gap-0.5 sticky top-20">
+    <aside class="w-full sm:w-44 shrink-0">
+        <ul class="menu menu-sm bg-base-200 rounded-xl p-2 gap-0.5 sm:sticky sm:top-20">
             <?php foreach ($groups as $g): ?>
             <li>
                 <a href="<?= route_to('admin.settings.group', $g) ?>"
@@ -178,6 +179,128 @@ endif;
             </div>
             <?php endforeach; ?>
 
+            <?php elseif ($isNotifications): ?>
+            <!-- ====== NOTIFICATIONS UI ====== -->
+            <?php
+            $notifTypes    = config('NotificationTypes');
+            $adminDefaults = json_decode(option('notifications.defaults', '{}'), true) ?: [];
+            ?>
+            <div id="js-notif-defaults"
+                 data-url="<?= esc(route_to('admin.settings.toggle')) ?>"
+                 data-csrf-name="<?= csrf_token() ?>"
+                 data-csrf-hash="<?= csrf_hash() ?>"
+                 hidden></div>
+
+            <!-- boolean / select / multiselect fields (saved via normal form) -->
+            <?php foreach ($fields as $field): ?>
+            <?php if (!in_array($field->type, ['boolean', 'select', 'multiselect'], true)) continue; ?>
+            <?php
+            $fName  = str_replace('.', '__', $field->key);
+            $fValue = $values[$field->key] ?? '';
+            $fOpts  = $field->options ? json_decode($field->options, true) : [];
+            $fLabel = __($field->key, $field->label ?? $field->key);
+            $fHint  = __($field->key . '_hint', '');
+            ?>
+            <div class="card bg-base-200 rounded-xl mb-6">
+                <div class="card-body gap-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
+                        <span class="text-sm opacity-60 pt-1"><?= esc($fLabel) ?></span>
+                        <div>
+                            <?php if ($field->type === 'boolean'): ?>
+                            <input type="hidden" name="<?= esc($fName) ?>" value="0">
+                            <input type="checkbox" name="<?= esc($fName) ?>" value="1" class="toggle toggle-sm" <?= $fValue === '1' ? 'checked' : '' ?>>
+                            <?php elseif ($field->type === 'select'): ?>
+                            <select name="<?= esc($fName) ?>" class="select select-bordered select-sm">
+                                <?php foreach ($fOpts as $opt): ?>
+                                <option value="<?= esc($opt['value']) ?>" <?= $fValue === $opt['value'] ? 'selected' : '' ?>><?= esc($opt['label']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <?php elseif ($field->type === 'multiselect'): ?>
+                            <?php $fSelected = json_decode($fValue, true) ?? []; ?>
+                            <select name="<?= esc($fName) ?>[]" multiple class="select select-bordered select-sm w-full h-24">
+                                <?php foreach ($fOpts as $opt): ?>
+                                <option value="<?= esc($opt['value']) ?>" <?= in_array($opt['value'], $fSelected, true) ? 'selected' : '' ?>><?= esc($opt['label']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <?php endif; ?>
+                            <?php if ($fHint): ?><p class="text-xs opacity-40 mt-1"><?= esc($fHint) ?></p><?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+
+            <!-- Notification defaults matrix -->
+            <div class="card bg-base-200 rounded-xl mb-6">
+                <div class="card-body gap-4">
+                    <div>
+                        <h3 class="font-semibold text-sm"><?= __('notifications.preferences', 'Notification Preferences') ?></h3>
+                        <p class="text-xs opacity-40 mt-0.5"><?= __('settings.notif_defaults_hint', 'Default notification channels for new users. Users can override these in their profile.') ?></p>
+                    </div>
+                    <?php foreach ($notifTypes->groups as $group => $groupLabel): ?>
+                    <?php
+                        $groupTypes = array_filter($notifTypes->types, fn($cfg) => ($cfg['group'] ?? '') === $group);
+                        if (empty($groupTypes)) continue;
+                    ?>
+                    <div>
+                        <p class="text-xs font-semibold uppercase opacity-40 mb-2">
+                            <?= __('notifications.group_' . $group, ucfirst($group)) ?>
+                        </p>
+                        <div class="flex flex-col gap-2">
+                        <?php foreach ($groupTypes as $typeKey => $cfg): ?>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm flex-1">
+                                <?= __('notifications.type_' . str_replace('.', '_', $typeKey), $cfg['label']) ?>
+                            </span>
+                            <?php foreach ($cfg['channels'] as $channel): ?>
+                            <?php
+                            $prefKey = $typeKey . '.' . $channel;
+                            $enabled = array_key_exists($prefKey, $adminDefaults)
+                                ? (bool)$adminDefaults[$prefKey]
+                                : ($cfg['defaults'][$channel] ?? false);
+                            ?>
+                            <label class="flex items-center gap-1 cursor-pointer">
+                                <input type="checkbox"
+                                       class="toggle toggle-xs admin-notif-toggle"
+                                       data-setting="notifications.defaults"
+                                       data-field="<?= esc($prefKey) ?>"
+                                       <?= $enabled ? 'checked' : '' ?>>
+                                <span class="text-xs opacity-60">
+                                    <?= __('notifications.channel_' . $channel, ucfirst($channel)) ?>
+                                </span>
+                            </label>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <?php elseif ($activeGroup === 'keys'): ?>
+            <!-- ====== KEYS GROUP UI ====== -->
+            <div class="card bg-base-200 rounded-xl">
+                <div class="card-body gap-y-4">
+                    <?php foreach ($fields as $field): ?>
+                    <?php
+                    $fName  = str_replace('.', '__', $field->key);
+                    $fValue = $values[$field->key] ?? '';
+                    $fLabel = __($field->key, $field->label ?? $field->key);
+                    $fHint  = __($field->key . '_hint', '');
+                    ?>
+                    <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
+                        <span class="text-sm opacity-60 pt-1"><?= esc($fLabel) ?></span>
+                        <div>
+                            <input type="text" name="<?= esc($fName) ?>" value="<?= esc($fValue) ?>"
+                                   class="input input-bordered input-sm w-full">
+                            <?php if ($fHint): ?><p class="text-xs opacity-40 mt-1"><?= esc($fHint) ?></p><?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
             <?php else: ?>
             <!-- ====== GENERIC GROUP UI ====== -->
             <div class="card bg-base-200 rounded-xl">
@@ -197,7 +320,7 @@ endif;
                     );
                     $isMultiline = in_array($field->type, ['textarea', 'code'], true);
                     ?>
-                    <div class="grid grid-cols-[12rem_1fr] <?= $isMultiline ? 'items-start' : 'items-center' ?> gap-x-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                         <span class="text-sm opacity-60<?= $isMultiline ? ' pt-1' : '' ?>"><?= esc($fLabel) ?></span>
 
                         <?php if ($field->type === 'textarea'): ?>

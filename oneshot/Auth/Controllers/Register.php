@@ -7,8 +7,12 @@ use OneShot\Auth\Services\OAuthService;
 
 class Register extends Auth
 {
-    public function index(): string
+    public function index(): string|\CodeIgniter\HTTP\RedirectResponse
     {
+        if ((new AuthService())->user()) {
+            return redirect()->to(config('Prefixes')->app . '/');
+        }
+
         $this->appendBC(__('auth.register', 'Register'), '');
         return $this->render('Auth::front/register', [
             'oauthProviders' => (new OAuthService())->enabledProviders(),

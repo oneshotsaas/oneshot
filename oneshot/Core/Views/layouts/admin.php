@@ -9,11 +9,13 @@
 
         <!-- Topbar -->
         <header class="sticky top-0 z-30 flex items-center h-14 px-4 bg-base-100 border-b border-base-200 gap-3">
-            <label for="admin-drawer" class="btn btn-ghost btn-sm btn-square lg:hidden">
+            <div class="tooltip tooltip-bottom lg:hidden" data-tip="<?= __('core.menu', 'Menu') ?>">
+            <label for="admin-drawer" class="btn btn-ghost btn-sm btn-square">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
             </label>
+            </div>
 
             <!-- Breadcrumbs -->
             <div class="flex-1 min-w-0">
@@ -30,9 +32,7 @@
 
         <!-- Sub-bar (filters / tabs) -->
         <?php if (!empty($page_subbar_view ?? '') || !empty($page_subbar ?? '')): ?>
-        <div class="sticky top-14 z-20 px-4 py-2 bg-base-100 border-b border-base-200">
             <?= !empty($page_subbar_view) ? render($page_subbar_view, get_defined_vars()) : $page_subbar ?>
-        </div>
         <?php endif; ?>
 
         <!-- Flash -->
@@ -79,16 +79,20 @@
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium truncate leading-tight"><?= esc(session('user_name') ?? 'Admin') ?></p>
                 </div>
-                <a href="<?= route_to('app.profile') ?>" class="btn btn-ghost btn-xs btn-square" title="<?= __('core.profile', 'Profile') ?>">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
-                </a>
-                <a href="<?= route_to('auth.logout') ?>" class="btn btn-ghost btn-xs btn-square text-error" title="<?= __('core.logout', 'Logout') ?>">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                    </svg>
-                </a>
+                <div class="tooltip tooltip-left" data-tip="<?= __('core.profile', 'Profile') ?>">
+                    <a href="<?= route_to('app.profile') ?>" class="btn btn-ghost btn-xs btn-square">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="tooltip tooltip-left" data-tip="<?= __('core.logout', 'Logout') ?>">
+                    <a href="<?= route_to('auth.logout') ?>" class="btn btn-ghost btn-xs btn-square text-error">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                    </a>
+                </div>
             </div>
         </aside>
     </div>

@@ -7,32 +7,25 @@ $url  = function(string $type = '', int $cat = 0) use ($base): string {
 $ft = $filterType ?? '';
 $fc = $filterCat  ?? 0;
 ?>
-<!-- Type pills -->
-<div class="flex items-center gap-1">
-    <a href="<?= $url('', $fc) ?>"
-       class="btn btn-xs gap-1 <?= $ft === '' ? 'btn-neutral' : 'btn-ghost opacity-60' ?>">
+<!-- Desktop: type pills + category (hidden on mobile) -->
+<div class="hidden sm:flex items-center gap-1">
+    <a href="<?= $url('', $fc) ?>" class="btn btn-xs gap-1 <?= $ft === '' ? 'btn-neutral' : 'btn-ghost opacity-60' ?>">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
         <?= __('content.filter_all', 'All') ?>
     </a>
-    <a href="<?= $url('post', $fc) ?>"
-       class="btn btn-xs gap-1 <?= $ft === 'post' ? 'btn-neutral' : 'btn-ghost opacity-60' ?>">
+    <a href="<?= $url('post', $fc) ?>" class="btn btn-xs gap-1 <?= $ft === 'post' ? 'btn-neutral' : 'btn-ghost opacity-60' ?>">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
         <?= __('content.type_post', 'Posts') ?>
     </a>
-    <a href="<?= $url('page', $fc) ?>"
-       class="btn btn-xs gap-1 <?= $ft === 'page' ? 'btn-neutral' : 'btn-ghost opacity-60' ?>">
+    <a href="<?= $url('page', $fc) ?>" class="btn btn-xs gap-1 <?= $ft === 'page' ? 'btn-neutral' : 'btn-ghost opacity-60' ?>">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         <?= __('content.type_page', 'Pages') ?>
     </a>
 </div>
-
 <?php if (!empty($categories)): ?>
-<div class="w-px h-4 bg-base-300"></div>
-<!-- Category dropdown -->
-<select class="select select-xs select-bordered max-w-[13rem]" onchange="window.location=this.value">
-    <option value="<?= $url($ft, 0) ?>" <?= !$fc ? 'selected' : '' ?>>
-        <?= __('content.filter_category', 'All categories') ?>
-    </option>
+<div class="hidden sm:block w-px h-4 bg-base-300"></div>
+<select class="hidden sm:block select select-xs select-bordered max-w-[13rem]" onchange="window.location=this.value">
+    <option value="<?= $url($ft, 0) ?>" <?= !$fc ? 'selected' : '' ?>><?= __('content.filter_category', 'All categories') ?></option>
     <?php foreach ($categories as $c): ?>
     <option value="<?= $url($ft, (int)$c->id) ?>" <?= $fc === (int)$c->id ? 'selected' : '' ?>>
         <?= str_repeat('·  ', $c->depth) ?><?= esc($c->title) ?>
@@ -40,8 +33,16 @@ $fc = $filterCat  ?? 0;
     <?php endforeach ?>
 </select>
 <?php endif ?>
-
-<div class="w-px h-4 bg-base-300"></div>
+<div class="hidden sm:block w-px h-4 bg-base-300"></div>
+<!-- Mobile filter toggle -->
+<div class="tooltip tooltip-bottom sm:hidden" data-tip="<?= __('content.filters', 'Filters') ?>">
+    <button type="button" class="btn btn-ghost btn-sm btn-square"
+            onclick="var f=document.getElementById('items-filters-m');f.classList.toggle('hidden');f.classList.toggle('flex')">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18M7 8h10M11 12h2M9 16h6"/>
+        </svg>
+    </button>
+</div>
 <?php
 $createParams = array_filter(['type' => $ft, 'cat' => $fc ?: '', 'back' => $url($ft, $fc)]);
 $createUrl    = route_to('admin.content.items.create') . ($createParams ? '?' . http_build_query($createParams) : '');

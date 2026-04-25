@@ -36,6 +36,6 @@ Providers implement a contract interface and live in `providers/`.
 | Contract  | Interface                          | Methods                                    |
 |-----------|------------------------------------|--------------------------------------------|
 | Payment   | `OneShot\Core\Contracts\Payment`   | charge, refund, createSubscription, cancel |
-| Notify    | `OneShot\Core\Contracts\Notify`    | send($to, $message, $options)              |
+| Notify    | `OneShot\Core\Contracts\Notify`    | send(string\|object $to, $message, $options) — pass user object or direct string (chat_id / email) |
 | Mail      | `OneShot\Core\Contracts\Mail`      | send($to, $subject, $body, $options)       |
 | Storage   | `OneShot\Core\Contracts\Storage`   | upload, delete, url                        |

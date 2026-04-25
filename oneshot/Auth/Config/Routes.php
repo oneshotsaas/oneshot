@@ -12,11 +12,11 @@ $routes->group($p->auth, function ($r) {
     // Password reset
     $r->get('forgot',              '\OneShot\Auth\Controllers\Forgot::index', ['as' => 'auth.forgot']);
     $r->post('forgot',             '\OneShot\Auth\Controllers\Forgot::store');
-    $r->get('reset/(:segment)',    '\OneShot\Auth\Controllers\Reset::index',  ['as' => 'auth.reset']);
-    $r->post('reset/(:segment)',   '\OneShot\Auth\Controllers\Reset::store');
+    $r->get('reset/(:segment)',    '\OneShot\Auth\Controllers\Reset::index/$1',  ['as' => 'auth.reset']);
+    $r->post('reset/(:segment)',   '\OneShot\Auth\Controllers\Reset::store/$1');
 
     // Email verification
-    $r->get('verify/(:segment)',   '\OneShot\Auth\Controllers\Verify::index',  ['as' => 'auth.verify']);
+    $r->get('verify/(:segment)',   '\OneShot\Auth\Controllers\Verify::index/$1',  ['as' => 'auth.verify']);
     $r->post('verify/resend',      '\OneShot\Auth\Controllers\Verify::resend', ['as' => 'auth.verify.resend']);
 
     // OAuth — secret segment prevents enumeration by people who know the framework

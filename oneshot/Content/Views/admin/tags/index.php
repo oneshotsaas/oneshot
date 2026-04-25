@@ -4,8 +4,8 @@ if ($slugWarning): ?>
 <div class="alert alert-warning mb-4"><?= esc($slugWarning) ?></div>
 <?php endif ?>
 
-<div class="rounded-lg border border-base-300 overflow-hidden">
-    <table class="table table-sm w-full">
+<div class="rounded-lg border border-base-300 overflow-x-auto overflow-hidden">
+    <table class="table table-sm w-full min-w-max">
         <thead>
             <tr class="bg-base-200 text-xs uppercase tracking-wider opacity-70">
                 <th class="font-semibold"><?= __('content.title', 'Title') ?></th>

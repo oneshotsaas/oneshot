@@ -9,13 +9,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 1. Read .ai/index.md                         ← entry point, always
 2. Read .ai/rules/general.md                 ← mandatory rules, always
-3. Read ONESHOT.md                           ← architecture overview (if needed)
-4. Read {module}/modulename.md               ← for the module you're working in
-5. Read the relevant .ai/rules/ or skill     ← based on task type
-6. Write code
+3. Read .ai/rules/ui-ux.md                   ← mandatory for any view work (layout, topbar, tables, mobile)
+3b. Read .ai/rules/modules.md               ← when creating or editing modules
+4. Read ONESHOT.md                           ← architecture overview (if needed)
+5. Read {module}/modulename.md               ← for the module you're working in
+6. Read the relevant .ai/rules/ or skill     ← based on task type
+7. Write code
 ```
 
-Never start writing code before completing steps 1–4.
+Never start writing code before completing steps 1–5.
 
 ---
 
@@ -33,11 +35,13 @@ The AI asks questions in chat, gets answers, ships working code.
 
 ```bash
 composer install
-php spark list                          # all available commands
-php spark routes                        # verify registered routes
-php spark migrate --all                 # run migrations across all modules
-php spark make:module ModuleName        # scaffold a new module in modules/
-php spark make:migration ModuleName X   # create a migration inside a module
+php spark list                                    # all available commands
+php spark routes                                  # verify registered routes
+php spark migrate -n "OneShot\\Core"              # run all migrations (all live in oneshot/Core/Database/Migrations/)
+php spark db:seed DatabaseSeeder                  # seed initial data
+php spark make:module ModuleName                  # scaffold a new module in modules/
+php spark make:migration ModuleName X             # create a migration inside a module
+php spark tasks:run                               # process queued notification tasks (email, Telegram)
 ```
 
 ---
@@ -108,4 +112,4 @@ git push origin dev
 | `oneshot/Core/Loader.php` | Dynamic sub-namespace registration |
 | `oneshot/Core/Controllers/Base.php` | `render()`, `share()`, `appendBC()`, `redirectWith()` |
 | `oneshot/Core/Models/Base.php` | `getAll()`, `getOne()`, `getById()`, `add()`, `addGet()`, `getOrAdd()` |
-| `oneshot/Core/Helpers/oneshot.php` | `render()`, `signId()`, `signedId()`, `l()`, `rds()`, `__()`, `encrypt()`, `decrypt()` |
+| `oneshot/Core/Helpers/oneshot.php` | `render()`, `signId()`, `signedId()`, `l()`, `rds()`, `__()`, `encrypt()`, `decrypt()`, `event()`, `notify()`, `activity()`, `clientIp()` |

@@ -2,11 +2,14 @@
 <form method="post">
     <?= csrf_field() ?>
     <div class="card bg-base-200 shadow">
-        <div class="card-body gap-4">
+        <div class="card-body p-4 sm:p-6 gap-4">
 
             <h2><?= sprintf(__('billing.subscribe_to', 'Subscribe to %s'), esc($plan->name)) ?></h2>
 
-            <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+            <?php $isFree = empty($prices); ?>
+
+            <?php if (!$isFree): ?>
+            <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                 <span class="text-sm opacity-60"><?= __('billing.billing_interval', 'Billing Interval') ?></span>
                 <select name="interval" id="interval" class="select select-sm select-bordered" onchange="updateSummary()">
                     <?php
@@ -29,7 +32,7 @@
                 </select>
             </div>
 
-            <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+            <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                 <span class="text-sm opacity-60"><?= __('billing.enter_promo', 'Promo Code') ?></span>
                 <input type="text" name="promo_code" value="<?= esc($promoCode ?? '') ?>" class="input input-sm input-bordered uppercase" placeholder="SAVE20">
             </div>
@@ -47,6 +50,7 @@
                 </div>
                 <p class="text-xs opacity-60 mt-2"><?= number_format($plan->credits_included) ?> <?= __('billing.credits', 'credits') ?></p>
             </div>
+            <?php endif ?>
 
             <button type="submit" class="btn btn-primary btn-sm"><?= __('billing.confirm_subscribe', 'Confirm Subscription') ?></button>
             <a href="<?= route_to('billing.plans') ?>" class="btn btn-ghost btn-sm"><?= __('billing.back', 'Back') ?></a>

@@ -1,5 +1,5 @@
-<div class="rounded-lg border border-base-300 overflow-hidden mb-6">
-    <table class="table table-sm w-full">
+<div class="rounded-lg border border-base-300 overflow-x-auto overflow-hidden mb-6">
+    <table class="table table-sm w-full min-w-max">
         <thead>
             <tr class="bg-base-200 text-xs uppercase tracking-wider opacity-70">
                 <th class="font-semibold"><?= __('billing.interval', 'Interval') ?></th>
@@ -9,6 +9,7 @@
                 <th class="font-semibold"><?= __('billing.promo_ends_at', 'Promo Ends') ?></th>
                 <th class="font-semibold"><?= __('billing.currency', 'Currency') ?></th>
                 <th class="font-semibold text-right"><?= __('billing.discount_pct', 'Save %') ?></th>
+                <th class="font-semibold"><?= __('billing.credits_grant', 'Credits Grant') ?></th>
                 <th></th>
             </tr>
         </thead>
@@ -30,6 +31,7 @@
                 </td>
                 <td class="font-mono text-xs opacity-60"><?= esc(strtoupper($pr->currency)) ?></td>
                 <td class="text-right tabular-nums"><?= $pr->discount_pct ? $pr->discount_pct . '%' : '<span class="opacity-30">—</span>' ?></td>
+                <td><span class="badge badge-ghost badge-sm"><?= esc($pr->credits_grant ?? 'full') ?></span></td>
                 <td>
                     <div class="flex items-center justify-end gap-1">
                         <div class="tooltip tooltip-left" data-tip="<?= __('billing.edit', 'Edit') ?>">
@@ -54,14 +56,14 @@
 </div>
 
 <div class="card bg-base-200 shadow max-w-2xl">
-    <div class="card-body gap-4">
+    <div class="card-body p-4 sm:p-6 gap-4">
         <h3 class="font-semibold" id="price-form-title"><?= __('billing.create', 'Create') ?> <?= __('billing.price', 'Price') ?></h3>
         <form method="post" id="price-form" action="<?= route_to('admin.billing.plan.prices.create', signId($plan->id)) ?>">
             <?= csrf_field() ?>
             <input type="hidden" name="_price_id" id="price_id" value="">
             <div class="grid gap-4">
 
-                <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+                <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                     <span class="text-sm opacity-60"><?= __('billing.interval', 'Interval') ?></span>
                     <select name="interval" id="price_interval" class="select select-sm select-bordered">
                         <?php foreach (['month','quarter','halfyear','year'] as $iv): ?>
@@ -70,27 +72,27 @@
                     </select>
                 </div>
 
-                <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+                <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                     <span class="text-sm opacity-60"><?= __('billing.currency', 'Currency') ?></span>
                     <input type="text" name="currency" id="price_currency" value="usd" class="input input-sm input-bordered" maxlength="3">
                 </div>
 
-                <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+                <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                     <span class="text-sm opacity-60"><?= __('billing.price', 'Price') ?> ($)</span>
                     <input type="text" name="price" id="price_price" value="" class="input input-sm input-bordered" required>
                 </div>
 
-                <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+                <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                     <span class="text-sm opacity-60"><?= __('billing.old_price', 'Old Price') ?> ($)</span>
                     <input type="text" name="old_price" id="price_old_price" value="" class="input input-sm input-bordered">
                 </div>
 
-                <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+                <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                     <span class="text-sm opacity-60"><?= __('billing.promo_price', 'Promo Price') ?> ($)</span>
                     <input type="text" name="promo_price" id="price_promo_price" value="" class="input input-sm input-bordered">
                 </div>
 
-                <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+                <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                     <span class="text-sm opacity-60"><?= __('billing.promo_ends_type', 'Promo End Type') ?></span>
                     <div class="flex gap-3 text-sm">
                         <label class="flex items-center gap-1 cursor-pointer">
@@ -108,12 +110,12 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6" id="promo_date_row" style="display:none">
+                <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1" id="promo_date_row" style="display:none">
                     <span class="text-sm opacity-60"><?= __('billing.promo_ends_at', 'Promo Ends At') ?></span>
                     <input type="datetime-local" name="promo_ends_at" id="price_promo_ends_at" value="" class="input input-sm input-bordered">
                 </div>
 
-                <div class="grid grid-cols-[12rem_1fr] items-start gap-x-6" id="promo_days_row" style="display:none">
+                <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1" id="promo_days_row" style="display:none">
                     <span class="text-sm opacity-60 pt-1"><?= __('billing.promo_ends_days', 'Days after signup') ?></span>
                     <div>
                         <input type="number" name="promo_ends_days" id="price_promo_ends_days" value="" min="1" max="365" class="input input-sm input-bordered w-28">
@@ -121,14 +123,25 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+                <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                     <span class="text-sm opacity-60"><?= __('billing.discount_pct', 'Discount %') ?></span>
                     <input type="number" name="discount_pct" id="price_discount_pct" value="" class="input input-sm input-bordered" min="0" max="100">
                 </div>
 
-                <div class="grid grid-cols-[12rem_1fr] items-center gap-x-6">
+                <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
                     <span class="text-sm opacity-60"><?= __('billing.promo_discount_pct', 'Promo Disc. %') ?></span>
                     <input type="number" name="promo_discount_pct" id="price_promo_discount_pct" value="" class="input input-sm input-bordered" min="0" max="100">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] items-start gap-x-6 gap-y-1">
+                    <div>
+                        <span class="text-sm opacity-60"><?= __('billing.credits_grant', 'Credits Grant') ?></span>
+                        <p class="text-xs opacity-40 mt-1"><?= __('billing.credits_grant_hint', 'full = all at once on subscribe/renew; monthly = one month at a time via TaskRunner') ?></p>
+                    </div>
+                    <select name="credits_grant" id="price_credits_grant" class="select select-sm select-bordered">
+                        <option value="full"><?= __('billing.credits_grant_full', 'full — all credits upfront') ?></option>
+                        <option value="monthly"><?= __('billing.credits_grant_monthly', 'monthly — one month at a time') ?></option>
+                    </select>
                 </div>
 
                 <div class="flex gap-2 pt-2">
@@ -157,6 +170,7 @@ function openPriceForm(pr) {
     document.getElementById('price_promo_price').value = pr.promo_price_ui || '';
     document.getElementById('price_discount_pct').value = pr.discount_pct || '';
     document.getElementById('price_promo_discount_pct').value = pr.promo_discount_pct || '';
+    document.getElementById('price_credits_grant').value = pr.credits_grant || 'full';
     document.getElementById('price-form').action = pr.update_url;
 
     if (pr.promo_ends_at) {

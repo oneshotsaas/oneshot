@@ -80,9 +80,30 @@ Settings registered by any module can have translatable labels and hints. The ad
 | `url`       | url input | `https://` placeholder |
 | `color`     | color picker | |
 | `boolean`   | toggle | stores `"0"` / `"1"` |
+| `json`      | custom UI (group-specific) | **never saved via generic form submit** — updated via `POST /admin/settings/toggle` AJAX endpoint; value is a JSON object of `"field.key": true/false` pairs |
 | `readonly`  | copyable text input | **never saved on form submit** — value must be set in seeder; re-seed when base URL or secrets change |
+
+## AJAX Toggle Endpoint
+
+`POST /admin/settings/toggle` — atomically flips a single key in a `type=json` setting.
+
+```js
+fetch('/admin/settings/toggle', {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ [csrfName]: csrfHash, setting: 'notifications.defaults', field: 'billing.invoice_paid.email', enabled: '1' })
+})
+```
+
+Returns `{ ok: true, csrf_hash: "..." }`. The caller must update its stored CSRF hash from the response.
+
+Rules:
+- Only works for settings with `type='json'`; returns 422 if the row is any other type
+- Creates the row if it doesn't exist yet (fetch defaults to `'{}'`)
+- AJAX only — returns 400 if not an AJAX request
 
 ## Default Groups
 
 - **general** — app_name, default_timezone, default_lang
 - **appearance** — themes, default modes, custom CSS per section+mode, logo, favicon
+- **notifications** — `notifications.defaults` (type=json, admin-level channel defaults), `notifications.queue_mode` (type=boolean, async delivery toggle)

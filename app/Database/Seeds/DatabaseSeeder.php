@@ -12,6 +12,6 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        (new \OneShot\Settings\Database\Seeds\SettingsSeeder())->run();
+        (new \OneShot\Core\Database\Seeds\SeedRunner())->run();
     }
 }

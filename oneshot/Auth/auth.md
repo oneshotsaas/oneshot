@@ -29,14 +29,18 @@ Handles user authentication: login, registration, logout, email verification, pa
 
 ## Models
 
-- `User`          — table `auth_users`; fields: id, email, password, name, role, lang, status, email_verified_at
+- `User`          — table `auth_users`; fields: id, email, deleted_email_hash, password, name, role, lang, timezone, status, email_verified_at, telegram_id
 - `Token`         — table `auth_tokens`; generic token store for verify/reset/magic-link/invite/2FA
 - `OAuthProvider` — table `auth_providers`; links OAuth provider accounts to auth_users
 
 ## Services
 
 - `Auth::login($email, $password)` — rate-limited, checks email_verification setting, regenerates session
-- `Auth::register($data)` — creates user, sends verification email if required/optional
+- `Auth::register($data, $options = [])` — creates user, sends verification email if required/optional; supports options:
+  - `send_verification` *(bool)* — override email sending (default: per `auth.email_verification` setting)
+  - `status` *(string)* — override initial status (default: `pending` if verification required, otherwise `active`)
+  - Example for programmatic creation (no email, always active): `register($data, ['send_verification' => false, 'status' => 'active'])`
+  - Before creating, checks `deleted_email_hash` against previously deleted accounts and applies `auth.deleted_email_policy`
 - `Auth::resetPassword($userId, $newPassword)` — invalidates all reset tokens, destroys all sessions
 - `Auth::loginWithOAuth($provider, $providerUser)` — 3-step: find by provider_id → link by verified email → create
 - `Auth::logout()` — destroys session
@@ -101,6 +105,10 @@ Seeded automatically via `php spark auth:setup` (idempotent, safe to re-run).
 Groups registered: **auth** and **mail**. Appear in `/admin/settings` automatically.
 
 Key settings consumed at runtime:
+- `auth.normalize_email` — `0` / `1` — strip `+tags` from all addresses; also strip dots for Gmail/Googlemail domains. Applied in both `login()` and `register()`
+- `auth.block_disposable_emails` — `0` / `1` — reject registrations from domains in `EmailDomains::$disposable`
+- `auth.blocked_email_domains` — free-text, any non-domain separators — additional domains to block on registration
+- `auth.deleted_email_policy` — `allow` / `flag` / `block` — what to do when a deleted account's email is re-used on registration (default: `allow`)
 - `auth.email_verification` — `required` / `optional` / `disabled`
 - `auth.password_min_length` — minimum password length
 - `auth.oauth_{provider}_enabled` — show/hide provider button
@@ -118,6 +126,33 @@ All in `oneshot/Core/Database/Migrations/`:
 - `2026-03-24-100000_AddEmailVerifiedAtToAuthUsers` — adds `email_verified_at`
 - `2026-03-24-100001_CreateAuthTokensTable` — `auth_tokens`
 - `2026-03-24-100002_CreateAuthProvidersTable` — `auth_providers`
+- `2026-04-04-100004_AddTelegramSupport` — adds `telegram_id VARCHAR(50) NULL` to `auth_users`; seeds `telegram.bot_token`, `notifications.defaults`, `notifications.queue_mode` settings
+- `2026-04-17-100000_AddDeletedEmailHashToAuthUsers` — adds `deleted_email_hash VARCHAR(64) NULL` to `auth_users` for fraud detection on re-registration
+
+## Email Domain Config (`oneshot/Auth/Config/EmailDomains.php`)
+
+Three static arrays, all `domain => 1` for O(1) `isset()` lookup:
+
+| Array | Purpose |
+|-------|---------|
+| `$trusted` | Well-known legitimate providers — disposable check skipped entirely |
+| `$dotNormalized` | Domains where dots in local part are insignificant (Gmail, Googlemail) |
+| `$disposable` | Bundled list of disposable / temporary email providers |
+
+Update `$disposable` from the community list:
+```bash
+php spark auth:update-disposable
+```
+
+## User Deletion (API)
+
+When a user is deleted via `POST /api/users/{id}/delete`, the record is **anonymised then soft-deleted**:
+- `email` → `deleted_{id}@deleted` — frees the address for re-registration
+- `deleted_email_hash` → SHA-256 of the original normalised email (`mb_strtolower(trim(...))`) — retained for fraud detection
+- `name`, `password`, `telegram_id`, `email_verified_at` → cleared
+- Row is soft-deleted (`deleted_at` set); related records (billing, logs) keep their FK intact
+
+On next registration with the same email, `Auth::register()` looks up `deleted_email_hash` and applies `auth.deleted_email_policy`.
 
 Run: `php spark migrate -n "OneShot\\Core"`
 
@@ -130,3 +165,4 @@ Run: `php spark migrate -n "OneShot\\Core"`
 
 - `php spark auth:cleanup` — delete expired and used tokens from `auth_tokens`
 - `php spark auth:setup` — seed/update Auth and Mail settings (safe to re-run on existing installs)
+- `php spark auth:update-disposable` — fetch latest disposable domain list from GitHub and rewrite `EmailDomains::$disposable`
