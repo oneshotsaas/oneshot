@@ -34,7 +34,6 @@ The AI asks questions in chat, gets answers, ships working code.
 ## Commands
 
 ```bash
-composer install
 php spark list                                    # all available commands
 php spark routes                                  # verify registered routes
 php spark migrate -n "OneShot\\Core"              # run all migrations (all live in oneshot/Core/Database/Migrations/)
