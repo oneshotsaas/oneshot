@@ -11,6 +11,8 @@ These rules are mandatory for every task, regardless of context:
 
 → Read **`.ai/rules/general.md`** — naming, code style, database, security, logging, routing conventions.
 → Read **`.ai/rules/ui-ux.md`** — layout, topbar, tables, forms, mobile responsiveness, DaisyUI patterns. **Required for any task that touches a view file.**
+→ Read **`.ai/rules/security.md`** — short mandatory security checklist (priorities, pre-finish checklist, Never list, authorization rule). **Required for any task touching user input, auth, payments, file uploads, or API endpoints.**
+→ For module-specific detail (auth, API, keys, billing, uploads, SSRF, race conditions, OWASP mapping) or a full security review → **`.ai/rules/references/security.md`**.
 
 ---
 
@@ -53,6 +55,9 @@ These rules are mandatory for every task, regardless of context:
 │   ├── ui-ux.md            ← mandatory for views: layout, topbar, tables, forms, mobile (DaisyUI+Tailwind)
 │   ├── modules.md          ← module structure, override mechanism, filter placement
 │   ├── api.md              ← API response format, auth, status codes
+│   ├── security.md         ← mandatory short security checklist (read every task)
+│   ├── references/
+│   │   └── security.md     ← full security reference: per-module detail, OWASP mapping, review process
 │   └── playwright.md       ← playwright-cli: working dir, screenshots, session management
 ├── skills/
 │   ├── make-module.md      ← how to scaffold a new module end-to-end
