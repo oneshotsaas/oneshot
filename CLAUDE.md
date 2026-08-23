@@ -36,7 +36,8 @@ The AI asks questions in chat, gets answers, ships working code.
 ```bash
 php spark list                                    # all available commands
 php spark routes                                  # verify registered routes
-php spark migrate -n "OneShot\\Core"              # run all migrations (all live in oneshot/Core/Database/Migrations/)
+php spark migrate --all                           # run all migrations (each module owns its own Database/Migrations/)
+php spark migrate -n "OneShot\\ModuleName"        # run one module's migrations only (or "Modules\\ModuleName" for modules/)
 php spark db:seed DatabaseSeeder                  # seed initial data
 php spark make:module ModuleName                  # scaffold a new module in modules/
 php spark make:migration ModuleName X             # create a migration inside a module

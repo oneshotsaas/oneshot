@@ -19,19 +19,19 @@
 - Use `save(['id' => $id, ...])` for updates; `getInsertID()` after insert
 
 ## Migrations
-- **All migrations live in `oneshot/Core/Database/Migrations/`** — single registry, namespace `OneShot\Core\Database\Migrations`
-- **Never** create migration files inside module subdirectories (`oneshot/Auth/`, `oneshot/Settings/`, etc.)
-- `OneShot\Core` is statically registered in `app/Config/Autoload.php`, so `php spark migrate -n "OneShot\\Core"` always finds them
-- Run: `php spark migrate -n "OneShot\\Core"`
+- Migration files live inside the module that owns them: `oneshot/{Module}/Database/Migrations/` or `modules/{Module}/Database/Migrations/`
+- Every module namespace (`OneShot\{Module}`, `Modules\{Module}`) is registered statically in `app/Config/Autoload.php`, so migrations there are auto-discovered by CI4 — no special-casing needed
+- Create: `php spark make:migration ModuleName Description`
+- Run all: `php spark migrate --all`
+- Run one module only: `php spark migrate -n "OneShot\\ModuleName"`
 - Seed: `php spark db:seed DatabaseSeeder`
 
 ## Commands (spark)
 
-- **All spark commands live in `oneshot/Core/Commands/`** with namespace `OneShot\Core\Commands`
-- `OneShot\Core` is statically registered in `app/Config/Autoload.php` — commands there are auto-discovered by CI4
-- Commands in dynamically-registered namespaces (`OneShot\Auth`, `OneShot\Settings`, etc.) are **not** discovered — never put commands there
+- Spark commands live inside the module that owns them: `oneshot/{Module}/Commands/` or `modules/{Module}/Commands/`, namespace `OneShot\{Module}\Commands` / `Modules\{Module}\Commands`
+- Every module namespace is registered statically in `app/Config/Autoload.php` — commands anywhere are auto-discovered by CI4, not just in Core
 - If a command needs the oneshot helpers, call `helper('oneshot')` — `oneshot_helper.php` aliases the main file
-- Group: always `'OneShot'` to keep commands grouped in `php spark list`
+- Group: use the module name to keep commands grouped in `php spark list`
 
 ## Security
 - Never expose internal database IDs — use `signId()` / `signedId()`

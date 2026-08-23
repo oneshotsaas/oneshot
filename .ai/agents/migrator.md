@@ -10,7 +10,8 @@ File lands in `modules/ModuleName/Database/Migrations/` or `oneshot/ModuleName/D
 
 ## Running Migrations
 ```bash
-php spark migrate --all   # run all pending migrations across all namespaces
+php spark migrate --all                        # run all pending migrations across all namespaces
+php spark migrate -n "OneShot\\ModuleName"      # run one module's migrations only
 php spark migrate:rollback --all
 ```
 

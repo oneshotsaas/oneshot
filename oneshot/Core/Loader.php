@@ -6,25 +6,11 @@ class Loader
 {
     public static function boot(): void
     {
-        $loader = service('autoloader');
-
-        // modules/ — first (priority over oneshot/)
-        foreach (glob(ROOTPATH . 'modules/*', GLOB_ONLYDIR) as $dir) {
-            $loader->addNamespace('Modules\\' . basename($dir), $dir);
-        }
-
-        // oneshot/ — all except Core (already registered)
-        foreach (glob(ROOTPATH . 'oneshot/*', GLOB_ONLYDIR) as $dir) {
-            $name = basename($dir);
-            if ($name !== 'Core') {
-                $loader->addNamespace('OneShot\\' . $name, $dir);
-            }
-        }
-
-        // providers/ — contract implementations
-        foreach (glob(ROOTPATH . 'providers/*', GLOB_ONLYDIR) as $dir) {
-            $loader->addNamespace('Providers\\' . basename($dir), $dir);
-        }
+        // Namespace registration for modules/*, oneshot/* and providers/* now happens
+        // statically in app/Config/Autoload.php (constructor), so it's visible to spark
+        // commands too, not just full app boots. This method only handles things that
+        // must run per-request/per-process: helper file loading and notification type
+        // registration.
 
         // helpers — oneshot core and all modules
         foreach (glob(ROOTPATH . 'oneshot/*/Helpers/*.php') as $file) {
